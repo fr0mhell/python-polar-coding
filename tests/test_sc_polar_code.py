@@ -19,28 +19,28 @@ class SCCodeNonSystematic(BasicPolarDecoderTestMixin, TestCase):
             'codeword_length': 64,
             'info_length': 32,
         })
-        self.basic_test_case()
+        self._check_decoder_on_dataset()
 
     def test_128_96_code(self):
         self.common_params.update({
             'codeword_length': 128,
             'info_length': 96,
         })
-        self.basic_test_case()
+        self._check_decoder_on_dataset()
 
     def test_256_64_code(self):
         self.common_params.update({
             'codeword_length': 256,
             'info_length': 64,
         })
-        self.basic_test_case()
+        self._check_decoder_on_dataset()
 
     def test_512_256_code(self):
         self.common_params.update({
             'codeword_length': 512,
             'info_length': 256,
         })
-        self.basic_test_case()
+        self._check_decoder_on_dataset()
 
 
 class SCCodeSystematic(SCCodeNonSystematic):
