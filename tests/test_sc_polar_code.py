@@ -1,18 +1,40 @@
 from unittest import TestCase
 from polar_codes import SCPolarCode
-from .datasets.sc_decoder_dataset import LLR_INPUT, BIT_OUTPUT
+from .datasets import sc_decoder_dataset_non_systematic as non_systematic_ds
+from .datasets import sc_decoder_dataset_systematic as systematic_ds
 from .mixins import BasicPolarDecoderTestMixin
 
 
 class SCCodeNonSystematic(BasicPolarDecoderTestMixin, TestCase):
     """Tests for non-systematic SC decoder."""
-    input_dataset = LLR_INPUT
-    output_dataset = BIT_OUTPUT
+    input_dataset = non_systematic_ds.LLR_INPUT
+    output_dataset = non_systematic_ds.BIT_OUTPUT
     code_class = SCPolarCode
 
     @property
     def is_systematic(self):
         return False
+
+    def test_8_5_code(self):
+        self.common_params.update({
+            'codeword_length': 8,
+            'info_length': 5,
+        })
+        code = self.code_class(**self.common_params)
+        input_vector = [
+            3.9226,
+            0.2339,
+            -1.8453,
+            1.2222,
+            -4.6747,
+            5.1177,
+            -1.6383,
+            2.4204,
+        ]
+        output_vector = [1, 0, 0, 0, 0]
+
+        result = code.decode(input_vector)
+        self.assertListEqual(list(result), output_vector)
 
     def test_64_32_code(self):
         self.common_params.update({
@@ -44,6 +66,13 @@ class SCCodeNonSystematic(BasicPolarDecoderTestMixin, TestCase):
 
 
 class SCCodeSystematic(SCCodeNonSystematic):
+    """Tests for systematic SC decoder.
+
+    Same to non-systematic SC decoder but with another dataset.
+
+    """
+    input_dataset = systematic_ds.LLR_INPUT
+    output_dataset = systematic_ds.BIT_OUTPUT
 
     @property
     def is_systematic(self):

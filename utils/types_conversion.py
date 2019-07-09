@@ -16,3 +16,8 @@ def int_to_bin_list(value: int, size: int, as_array=False):
     if as_array:
         return np.array([int(bit) for bit in bin(value)[2:].zfill(size)])
     return [int(bit) for bit in bin(value)[2:].zfill(size)]
+
+
+def bitreversed(num: int, n) -> int:
+    """Reverse bits of n-bit integer value."""
+    return int(''.join(reversed(bin(num)[2:].zfill(n))), 2)

@@ -8,7 +8,6 @@ class BasicPolarDecoderTestMixin:
         self.common_params = {
             'codeword_length': None,
             'info_length': None,
-            'design_snr': 1.0,
             'is_systematic': self.is_systematic,
         }
 
@@ -25,4 +24,4 @@ class BasicPolarDecoderTestMixin:
 
         for i, input_vector in enumerate(input_vectors):
             result = code.decode(input_vector)
-            self.assertListEquest(result, output_vectors[i])
+            self.assertListEqual(list(result), output_vectors[i])
