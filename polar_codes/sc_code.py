@@ -1,6 +1,7 @@
 import utils
+
 from .base import BasicPolarCode
-from .successive_cancellation import SCBranch
+from .successive_cancellation import SCDecoder
 
 
 class SCPolarCode(BasicPolarCode):
@@ -16,7 +17,7 @@ class SCPolarCode(BasicPolarCode):
         Based on: https://arxiv.org/abs/0807.3917 (page 15).
 
         """
-        decoding_branch = SCBranch(received_message=llr_estimated_msg)
+        decoding_branch = SCDecoder(received_llr=llr_estimated_msg)
 
         for j in range(self.N):
             # bit reversing of index allow to first deal with not XORed bits

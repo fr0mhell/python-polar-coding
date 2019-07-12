@@ -1,5 +1,7 @@
 import copy
+
 import numpy as np
+
 import utils
 
 # Boundaries for LLR values that mean definitely ZERO or ONE values

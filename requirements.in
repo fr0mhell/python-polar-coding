@@ -4,3 +4,4 @@ ipython
 numba
 numpy
 pycrc
+isort

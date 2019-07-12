@@ -1,4 +1,5 @@
 from unittest import TestCase
+
 from utils import int_to_bin_list
 
 
