@@ -27,3 +27,25 @@ class TestSCDecoder(TestCase):
         for stage in self.decoder.intermediate_llr:
             start = start // 2
             self.assertEqual(stage.size, start)
+
+    def test_compute_intermediate_llr_for_zero_level(self):
+        """Test `compute_intermediate_llr` method for zero level.
+
+        Zero level means decoding of the first symbol.
+
+        """
+        expected = [
+            np.array([-0.63763626, -0.70333425, -0.2126217, 0.48246313]),
+            np.array([0.63763626, -0.2126217]),
+            np.array([-0.2126217]),
+        ]
+
+        self.decoder.set_decoder_state()
+
+        self.decoder.compute_intermediate_llr()
+
+        for i in range(self.decoder.n):
+            np.testing.assert_array_almost_equal(
+                self.decoder.intermediate_llr[i],
+                expected[i]
+            )

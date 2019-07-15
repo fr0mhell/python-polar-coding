@@ -67,10 +67,9 @@ class SCDecoder:
 
     def set_decoder_state(self):
         """Set current state of the decoder."""
-        size = int(np.ceil(np.log2(self.n)))
         bits = np.unpackbits(np.array([self._current_position], dtype=np.uint8))
-        self._current_state = bits[-size]
-        self._current_level = np.where(self._current_state, self._previous_state)[0][0]
+        self._current_state = bits[-self.n:]
+        self._current_level = int(np.argwhere(self._current_state != self._previous_state)[0])
 
     def compute_intermediate_llr(self):
         """Compute intermediate LLR values."""
@@ -85,13 +84,9 @@ class SCDecoder:
 
             llr = self.intermediate_llr[index]
 
-    def _compute_llr_level(self, llr):
-        """"""
-        if self._current_level == self.n - 1:
-            return
-
-    def make_decision(self):
+    def make_decision(self, mask_bit):
         """Make decision about current decoding value."""
+        return 0 if mask_bit == 0 else int(self.intermediate_llr[-1][0] < 0)
 
     def compute_intermediate_bits(self):
         """Compute intermediate BIT values."""
