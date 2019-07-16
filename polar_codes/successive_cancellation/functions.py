@@ -25,3 +25,13 @@ def compute_right_llr(llr, left_bits):
             (2 * left_bits[i] - 1) * llr[2 * i]
         )
     return right_llr
+
+
+@numba.njit
+def compute_bits(left_bits, right_bits):
+    """Compute intermediate bits."""
+    result = np.zeros(int(left_bits.size * 2), dtype=np.int8)
+    for i in range(left_bits.size):
+        result[2 * i] = left_bits[i] ^ right_bits[i]
+        result[2 * i + 1] = right_bits[i]
+    return result
