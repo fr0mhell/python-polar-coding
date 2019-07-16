@@ -7,8 +7,9 @@ from polar_codes.successive_cancellation.sc_decoder import SCDecoder
 
 class TestSCDecoder(TestCase):
 
-    def setUp(self):
-        self.message = np.array([
+    @classmethod
+    def setUp(cls):
+        cls.message = np.array([
             1.01006308,
             -0.63763626,
             0.70333425,
@@ -18,7 +19,8 @@ class TestSCDecoder(TestCase):
             -0.48246313,
             -1.44867097
         ])
-        self.decoder = SCDecoder(self.message)
+        cls.mask = np.array([0, 1, 0, 1, 0, 1, 1, 1, ], dtype=np.int8)
+        cls.decoder = SCDecoder(cls.message, cls.mask)
 
     def test_initial_params(self):
         self.assertEqual(self.decoder.n, 3)
@@ -28,24 +30,160 @@ class TestSCDecoder(TestCase):
             start = start // 2
             self.assertEqual(stage.size, start)
 
-    def test_compute_intermediate_llr_for_zero_level(self):
-        """Test `compute_intermediate_llr` method for zero level.
+    def test_decoding_process(self):
+        """Test SC decoding process step-by-step."""
+        # Step 0
+        self.decoder.set_decoder_state()
 
-        Zero level means decoding of the first symbol.
-
-        """
-        expected = [
+        expected_llr = [
             np.array([-0.63763626, -0.70333425, -0.2126217, 0.48246313]),
             np.array([0.63763626, -0.2126217]),
             np.array([-0.2126217]),
         ]
-
-        self.decoder.set_decoder_state()
-
         self.decoder.compute_intermediate_llr()
-
         for i in range(self.decoder.n):
             np.testing.assert_array_almost_equal(
                 self.decoder.intermediate_llr[i],
-                expected[i]
+                expected_llr[i]
+            )
+
+        self.decoder.make_decision()
+        self.assertEqual(self.decoder.decoded[self.decoder.current_position], 0)
+
+        expected_bits = [
+            np.array([-1, -1, -1, -1, -1, -1, -1, -1, ]),
+            np.array([-1, -1, -1, -1, -1, -1, -1, -1, ]),
+            np.array([0, -1, -1, -1, -1, -1, -1, -1, ]),
+        ]
+        self.decoder.compute_intermediate_bits()
+        for i in range(self.decoder.n):
+            np.testing.assert_array_equal(
+                self.decoder.intermediate_bits[i],
+                expected_bits[i]
+            )
+
+        self.decoder.set_next_decoding_position()
+
+        # Step 1
+        self.decoder.set_decoder_state()
+
+        expected_llr = [
+            np.array([-0.63763626, -0.70333425, -0.2126217, 0.48246313]),
+            np.array([0.63763626, -0.2126217]),
+            np.array([0.42501456]),
+        ]
+        self.decoder.compute_intermediate_llr()
+        for i in range(self.decoder.n):
+            np.testing.assert_array_almost_equal(
+                self.decoder.intermediate_llr[i],
+                expected_llr[i]
+            )
+
+        self.decoder.make_decision()
+        self.assertEqual(self.decoder.decoded[self.decoder.current_position], 0)
+
+        expected_bits = [
+            np.array([-1, -1, -1, -1, -1, -1, -1, -1, ]),
+            np.array([0, 0, -1, -1, -1, -1, -1, -1, ]),
+            np.array([0, 0, -1, -1, -1, -1, -1, -1, ]),
+        ]
+        self.decoder.compute_intermediate_bits()
+        for i in range(self.decoder.n):
+            np.testing.assert_array_equal(
+                self.decoder.intermediate_bits[i],
+                expected_bits[i]
+            )
+
+        self.decoder.set_next_decoding_position()
+
+        return
+
+        # Step 2
+        self.decoder.set_decoder_state()
+
+        expected_llr = [
+            np.array([-0.63763626, -0.70333425, -0.2126217, 0.48246313]),
+            np.array([-1.34097051, 0.26984143]),
+            np.array([-0.26984143]),
+        ]
+        self.decoder.compute_intermediate_llr()
+        for i in range(self.decoder.n):
+            np.testing.assert_array_almost_equal(
+                self.decoder.intermediate_llr[i],
+                expected_llr[i]
+            )
+
+        # Step 3
+        self.decoder.set_decoder_state()
+
+        expected_llr = [
+            np.array([-0.63763626, -0.70333425, -0.2126217, 0.48246313]),
+            np.array([-1.34097051, 0.26984143]),
+            np.array([-1.07112908]),
+        ]
+        self.decoder.compute_intermediate_llr()
+        for i in range(self.decoder.n):
+            np.testing.assert_array_almost_equal(
+                self.decoder.intermediate_llr[i],
+                expected_llr[i]
+            )
+
+        # Step 4
+        self.decoder.set_decoder_state()
+
+        expected_llr = [
+            np.array([-1.64769934, -3.9835236, -1.41000593, -0.96620784]),
+            np.array([1.64769934, 0.96620784]),
+            np.array([0.96620784]),
+        ]
+        self.decoder.compute_intermediate_llr()
+        for i in range(self.decoder.n):
+            np.testing.assert_array_almost_equal(
+                self.decoder.intermediate_llr[i],
+                expected_llr[i]
+            )
+
+        # Step 5
+        self.decoder.set_decoder_state()
+
+        expected_llr = [
+            np.array([-1.64769934, -3.9835236, -1.41000593, -0.96620784]),
+            np.array([1.64769934, 0.96620784]),
+            np.array([2.61390718]),
+        ]
+        self.decoder.compute_intermediate_llr()
+        for i in range(self.decoder.n):
+            np.testing.assert_array_almost_equal(
+                self.decoder.intermediate_llr[i],
+                expected_llr[i]
+            )
+
+        # Step 6
+        self.decoder.set_decoder_state()
+
+        expected_llr = [
+            np.array([-1.64769934, -3.9835236, -1.41000593, -0.96620784]),
+            np.array([-5.63122294, -2.37621377]),
+            np.array([2.61390718]),
+        ]
+        self.decoder.compute_intermediate_llr()
+        for i in range(self.decoder.n):
+            np.testing.assert_array_almost_equal(
+                self.decoder.intermediate_llr[i],
+                expected_llr[i]
+            )
+
+        # Step 7
+        self.decoder.set_decoder_state()
+
+        expected_llr = [
+            np.array([-1.64769934, -3.9835236, -1.41000593, -0.96620784]),
+            np.array([-5.63122294, -2.37621377]),
+            np.array([-8.00743671]),
+        ]
+        self.decoder.compute_intermediate_llr()
+        for i in range(self.decoder.n):
+            np.testing.assert_array_almost_equal(
+                self.decoder.intermediate_llr[i],
+                expected_llr[i]
             )
