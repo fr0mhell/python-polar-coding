@@ -111,14 +111,14 @@ class SCDecoder:
             return
 
         max_level = self.n - np.argwhere(self.current_state != 0)[0][-1] + 1
+        end = self.current_position + 1
         for i in range(1, max_level):
-            start = self.current_position - i
-            end = int(np.power(2, i))
-            middle = end // 2
+            start = end - int(np.power(2, i))
+            middle = (start + end) // 2
 
             left_bits = self.intermediate_bits[self.n - i][start:middle]
             right_bits = self.intermediate_bits[self.n - i][middle:end]
-            self.intermediate_bits[i][start:end] = compute_bits(left_bits, right_bits)
+            self.intermediate_bits[self.n - i - 1][start:end] = compute_bits(left_bits, right_bits)
 
     def set_next_decoding_position(self):
         """Set next decoding position."""
