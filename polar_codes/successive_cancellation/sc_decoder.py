@@ -89,7 +89,7 @@ class SCDecoder:
                 if self.current_position % 2 == 1:
                     start = self.current_position - 1
                 else:
-                    start = self.current_position - int(np.power(2, self.current_level))
+                    start = self.current_position - int(np.power(2, self.n - self.current_level - 1))
 
                 bits = self.intermediate_bits[index][start:end]
                 self.intermediate_llr[index] = compute_right_llr(llr, bits)
@@ -110,9 +110,8 @@ class SCDecoder:
         if self.current_position % 2 == 0:
             return
 
-        max_level = self.n - np.argwhere(self.current_state != 0)[0][-1] + 1
         end = self.current_position + 1
-        for i in range(1, max_level):
+        for i in range(1, self.current_position % (self.N // 2) + 1):
             start = end - int(np.power(2, i))
             middle = (start + end) // 2
 
