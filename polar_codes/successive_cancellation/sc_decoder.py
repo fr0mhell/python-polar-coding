@@ -54,9 +54,9 @@ class SCDecoder:
     def n(self):
         return self._steps
 
-    def decoder_step(self):
+    def decoder_step(self, step):
         """Single step of SC-decoding algorithm to decode one bit."""
-        self.set_decoder_state()
+        self.set_decoder_state(step)
         self.compute_intermediate_llr()
         self.make_decision()
 
@@ -66,11 +66,13 @@ class SCDecoder:
         self.compute_intermediate_bits()
         self.set_next_decoding_position()
 
-    def set_decoder_state(self):
+    def set_decoder_state(self, step):
         """Set current state of the decoder."""
+        self.current_position = step
         bits = np.unpackbits(np.array([self.current_position], dtype=np.uint8))
         self.current_state = bits[-self.n:]
-        self.current_level = np.argwhere(self.current_state != self.previous_state)[0][0]
+        self.current_level = \
+            np.argwhere(self.current_state != self.previous_state)[0][0]
 
     def compute_intermediate_llr(self):
         """Compute intermediate LLR values."""
@@ -89,7 +91,8 @@ class SCDecoder:
                 if self.current_position % 2 == 1:
                     start = self.current_position - 1
                 else:
-                    start = self.current_position - int(np.power(2, self.n - self.current_level - 1))
+                    start = self.current_position - \
+                            int(np.power(2, self.n - self.current_level - 1))
 
                 bits = self.intermediate_bits[index][start:end]
                 self.intermediate_llr[index] = compute_right_llr(llr, bits)
@@ -117,7 +120,8 @@ class SCDecoder:
 
             left_bits = self.intermediate_bits[self.n - i][start:middle]
             right_bits = self.intermediate_bits[self.n - i][middle:end]
-            self.intermediate_bits[self.n - i - 1][start:end] = compute_bits(left_bits, right_bits)
+            self.intermediate_bits[self.n - i - 1][start:end] = \
+                compute_bits(left_bits, right_bits)
 
     def set_next_decoding_position(self):
         """Set next decoding position."""
