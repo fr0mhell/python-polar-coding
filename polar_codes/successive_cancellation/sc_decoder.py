@@ -1,6 +1,6 @@
 import numpy as np
 
-from .functions import compute_left_llr, compute_right_llr, compute_bits
+from .functions import compute_bits, compute_left_llr, compute_right_llr
 
 
 class SCDecoder:
