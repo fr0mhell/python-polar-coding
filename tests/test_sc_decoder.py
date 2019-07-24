@@ -8,7 +8,7 @@ from polar_codes.successive_cancellation.sc_decoder import SCDecoder
 class TestSCDecoder(TestCase):
 
     @classmethod
-    def setUp(cls):
+    def setUpClass(cls):
         cls.message = np.array([
             1.01006308,
             -0.63763626,

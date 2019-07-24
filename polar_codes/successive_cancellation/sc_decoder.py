@@ -24,8 +24,9 @@ class SCDecoder:
 
         self.current_position = 0
         self.current_state = np.zeros(self.n, dtype=np.int8)
-        self.previous_state = np.ones(self.n, dtype=np.int8)
         self.current_level = 0
+        self.previous_state = np.ones(self.n, dtype=np.int8)
+        self.previous_level = 0
 
         self.received_llr = received_llr
         self.mask = mask
@@ -69,7 +70,9 @@ class SCDecoder:
     def set_decoder_state(self, step):
         """Set current state of the decoder."""
         self.current_position = step
-        bits = np.unpackbits(np.array([self.current_position], dtype=np.uint8))
+        bits = np.unpackbits(np.array(
+            [self.current_position], dtype=np.uint32
+        ).byteswap().view(np.uint8))
         self.current_state = bits[-self.n:]
         self.current_level = \
             np.argwhere(self.current_state != self.previous_state)[0][0]
@@ -114,19 +117,29 @@ class SCDecoder:
             return
 
         end = self.current_position + 1
-        for i in range(1, self.current_position % (self.N // 2) + 1):
-            start = end - int(np.power(2, i))
+        max_level = self._compute_max_level(end, self.n)
+        for i in range(self.n - 1, max_level - 1, -1):
+            start = end - int(np.power(2, self.n - i))
             middle = (start + end) // 2
 
-            left_bits = self.intermediate_bits[self.n - i][start:middle]
-            right_bits = self.intermediate_bits[self.n - i][middle:end]
-            self.intermediate_bits[self.n - i - 1][start:end] = \
+            left_bits = self.intermediate_bits[i][start:middle]
+            right_bits = self.intermediate_bits[i][middle:end]
+            self.intermediate_bits[i - 1][start:end] = \
                 compute_bits(left_bits, right_bits)
+
+    @staticmethod
+    def _compute_max_level(end, n):
+        """"""
+        x = np.log2(end)
+
+        if x != int(x):
+            return n - 1
+        return int(n - x)
 
     def set_next_decoding_position(self):
         """Set next decoding position."""
-        self.current_position += 1
         self.previous_state.ravel()[:self.n] = self.current_state
+        self.previous_level = self.current_level
 
     def _get_intermediate_llr_structure(self):
         intermediate_llr = list()
