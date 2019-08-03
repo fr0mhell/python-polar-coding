@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def int_to_bin_list(value: int, size: int, as_array=False):
+def int_to_bin_list(value: int, size: int, as_array=True):
     """Get binary representation in a list form of given value.
 
     Args:
@@ -13,11 +13,13 @@ def int_to_bin_list(value: int, size: int, as_array=False):
         (list): binary representation of given value and size.
 
     """
+    binary_list = [int(bit) for bit in np.binary_repr(value, width=size)]
+
     if as_array:
-        return np.array([int(bit) for bit in bin(value)[2:].zfill(size)])
-    return [int(bit) for bit in bin(value)[2:].zfill(size)]
+        return np.array(binary_list)
+    return binary_list
 
 
-def bitreversed(num: int, n) -> int:
+def bitreversed(value: int, size: int) -> int:
     """Reverse bits of n-bit integer value."""
-    return int(''.join(reversed(bin(num)[2:].zfill(n))), 2)
+    return int(''.join(reversed(np.binary_repr(value, width=size))), 2)
