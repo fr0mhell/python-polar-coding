@@ -1,7 +1,7 @@
 from operator import itemgetter
 
 import numpy as np
-
+import numba
 from utils import calculate_crc_16, check_crc_16, int_to_bin_list
 
 from .polar_code_construction import bhattacharyya_bounds
@@ -82,13 +82,38 @@ class BasicPolarCode:
             message = self._add_crc(message)
 
         precoded = self._precode(message)
-        encoded = self._mul_matrix(precoded)
+        encoded = self.non_systematic_encode(precoded, self.n)
 
         if self.is_systematic:
             encoded *= self.polar_mask
-            encoded = self._mul_matrix(encoded)
+            encoded = self.non_systematic_encode(encoded, self.n)
 
         return encoded
+
+    @staticmethod
+    @numba.njit
+    def non_systematic_encode(message, n):
+        """Non-systematic encoding.
+
+        Args:
+            message (numpy.array): precoded message to encode.
+            n (int): `n` parameter of polar code.
+
+        Returns:
+            message (numpy.array): non-systematically encoded message.
+
+        """
+        for i in range(n):
+            step = np.power(2, n - i) // 2
+            pairs = np.power(2, i)
+
+            for j in range(pairs):
+                start = j * 2 * step
+
+                for k in range(step):
+                    message[k+start] = message[k+start] ^ message[k+start+step]
+
+        return message
 
     def decode(self, received_message):
         """Decode message."""
@@ -176,7 +201,7 @@ class BasicPolarCode:
 
     def _compute_crc_value(self, message):
         """Calculate CRC sum of message and add result to message."""
-        return int_to_bin_list(calculate_crc_16(message), 16, True)
+        return int_to_bin_list(calculate_crc_16(message), 16)
 
     def _check_crc(self, decoded_info):
         """Check decoded information message with CRC algorithm."""

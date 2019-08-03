@@ -1,6 +1,8 @@
 import numba
 import numpy as np
 
+from utils import bitreversed
+
 
 class SCDecoder:
     """Implements SC decoding algorithm.
@@ -15,7 +17,7 @@ class SCDecoder:
         mask (np.array): Polar code mask.
 
     """
-    def __init__(self, received_llr, mask):
+    def __init__(self, received_llr, mask, is_systematic=True):
 
         self._msg_length = received_llr.size
         self._steps = int(np.log2(self._msg_length))
@@ -27,10 +29,9 @@ class SCDecoder:
         self.previous_state = np.ones(self.n, dtype=np.int8)
         self.previous_level = 0
 
+        self.is_systematic = is_systematic
         self.received_llr = received_llr
         self.mask = mask
-        # decoded data
-        self.decoded = np.zeros(self.N, dtype=np.int8)
         # LLR values at intermediate steps
         self.intermediate_llr = self._get_intermediate_llr_structure()
         # Bit values at intermediate steps
@@ -69,16 +70,20 @@ class SCDecoder:
     def n(self):
         return self._steps
 
+    @property
+    def result(self):
+        """Decoding result."""
+        if self.is_systematic:
+            return self.intermediate_bits[0]
+        return self.intermediate_bits[-1]
+
     def decoder_step(self, step):
         """Single step of SC-decoding algorithm to decode one bit."""
         self.set_decoder_state(step)
         self.compute_intermediate_llr()
-        self.make_decision()
+        decoded = self.make_decision()
 
-        if self.current_position == self.N - 1:
-            return
-
-        self.compute_intermediate_bits()
+        self.compute_intermediate_bits(decoded)
         self.set_next_decoding_position()
 
     def set_decoder_state(self, step):
@@ -120,14 +125,14 @@ class SCDecoder:
 
     def make_decision(self):
         """Make decision about current decoding value."""
-        mask_bit = self.mask[self.current_position]
+        index = bitreversed(self.current_position, self.n)
+        mask_bit = self.mask[index]
         result = 0 if mask_bit == 0 else int(self.intermediate_llr[-1][0] < 0)
-        self.decoded[self.current_position] = result
+        return result
 
-    def compute_intermediate_bits(self):
+    def compute_intermediate_bits(self, decoded):
         """Compute intermediate BIT values."""
-        self.intermediate_bits[-1][self.current_position] = \
-            self.decoded[self.current_position]
+        self.intermediate_bits[-1][self.current_position] = decoded
 
         if self.current_position % 2 == 0:
             return
@@ -149,9 +154,11 @@ class SCDecoder:
         """"""
         x = np.log2(end)
 
+        if x == n:
+            return 1
         if x != int(x):
             return n - 1
-        return int(n - x)
+        return n - int(x)
 
     def set_next_decoding_position(self):
         """Set next decoding position."""
@@ -167,10 +174,9 @@ class SCDecoder:
         return intermediate_llr
 
     def _get_intermediate_bits_structure(self):
-        intermediate_bits = list()
-        for _ in range(self.n):
-            # Set initial values to -1 for debugging and testing purposes
-            intermediate_bits.append(np.zeros(self.N, dtype=np.int8) - 1)
+        intermediate_bits = [
+            np.zeros(self.N, dtype=np.int8) for _ in range(self.n + 1)
+        ]
         return intermediate_bits
 
     def update_before_fork(self):
@@ -206,9 +212,9 @@ class SCDecoder:
         left_llr = np.zeros(llr.size // 2, dtype=np.double)
         for i in range(left_llr.size):
             left_llr[i] = (
-                    np.sign(llr[2 * i]) *
-                    np.sign(llr[2 * i + 1]) *
-                    np.fabs(llr[2 * i: 2 * i + 2]).min()
+                np.sign(llr[2 * i]) *
+                np.sign(llr[2 * i + 1]) *
+                np.fabs(llr[2 * i: 2 * i + 2]).min()
             )
         return left_llr
 
@@ -219,8 +225,8 @@ class SCDecoder:
         right_llr = np.zeros(llr.size // 2, dtype=np.double)
         for i in range(right_llr.size):
             right_llr[i] = (
-                    llr[2 * i + 1] -
-                    (2 * left_bits[i] - 1) * llr[2 * i]
+                llr[2 * i + 1] -
+                (2 * left_bits[i] - 1) * llr[2 * i]
             )
         return right_llr
 
