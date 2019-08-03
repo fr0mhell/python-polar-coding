@@ -1,6 +1,5 @@
+import numba
 import numpy as np
-
-from .functions import compute_bits, compute_left_llr, compute_right_llr
 
 
 class SCDecoder:
@@ -47,6 +46,21 @@ class SCDecoder:
         # the result after all bits decoded
         self.correct_prob = 1
 
+    def __eq__(self, other):
+        return self.correct_prob == other.correct_prob
+
+    def __gt__(self, other):
+        return self.correct_prob > other.correct_prob
+
+    def __ge__(self, other):
+        return self > other or self == other
+
+    def __lt__(self, other):
+        return not (self >= other)
+
+    def __le__(self, other):
+        return not (self > other)
+
     @property
     def N(self):
         return self._msg_length
@@ -87,18 +101,20 @@ class SCDecoder:
                 continue
 
             if value == 0:
-                self.intermediate_llr[index] = compute_left_llr(llr)
+                self.intermediate_llr[index] = self.compute_left_llr(llr)
 
             if value == 1:
                 end = self.current_position
                 if self.current_position % 2 == 1:
                     start = self.current_position - 1
                 else:
-                    start = self.current_position - \
-                            int(np.power(2, self.n - self.current_level - 1))
+                    start = (
+                        self.current_position -
+                        int(np.power(2, self.n - self.current_level - 1))
+                    )
 
                 bits = self.intermediate_bits[index][start:end]
-                self.intermediate_llr[index] = compute_right_llr(llr, bits)
+                self.intermediate_llr[index] = self.compute_right_llr(llr, bits)
 
             llr = self.intermediate_llr[index]
 
@@ -125,9 +141,10 @@ class SCDecoder:
             left_bits = self.intermediate_bits[i][start:middle]
             right_bits = self.intermediate_bits[i][middle:end]
             self.intermediate_bits[i - 1][start:end] = \
-                compute_bits(left_bits, right_bits)
+                self.compute_bits(left_bits, right_bits)
 
     @staticmethod
+    @numba.njit
     def _compute_max_level(end, n):
         """"""
         x = np.log2(end)
@@ -170,21 +187,6 @@ class SCDecoder:
     def fork(self):
         """Make a copy of SC branch for List decoding"""
 
-    def __eq__(self, other):
-        return self.correct_prob == other.correct_prob
-
-    def __gt__(self, other):
-        return self.correct_prob > other.correct_prob
-
-    def __ge__(self, other):
-        return self > other or self == other
-
-    def __lt__(self, other):
-        return not (self >= other)
-
-    def __le__(self, other):
-        return not (self > other)
-
     def update_correct_probability(self):
         """"""
 
@@ -196,6 +198,41 @@ class SCDecoder:
 
     def set_bit_as_frozen(self):
         """"""
+
+    @staticmethod
+    @numba.njit
+    def compute_left_llr(llr):
+        """Compute LLR for left node."""
+        left_llr = np.zeros(llr.size // 2, dtype=np.double)
+        for i in range(left_llr.size):
+            left_llr[i] = (
+                    np.sign(llr[2 * i]) *
+                    np.sign(llr[2 * i + 1]) *
+                    np.fabs(llr[2 * i: 2 * i + 2]).min()
+            )
+        return left_llr
+
+    @staticmethod
+    @numba.njit
+    def compute_right_llr(llr, left_bits):
+        """Compute LLR for right node."""
+        right_llr = np.zeros(llr.size // 2, dtype=np.double)
+        for i in range(right_llr.size):
+            right_llr[i] = (
+                    llr[2 * i + 1] -
+                    (2 * left_bits[i] - 1) * llr[2 * i]
+            )
+        return right_llr
+
+    @staticmethod
+    @numba.njit
+    def compute_bits(left_bits, right_bits):
+        """Compute intermediate bits."""
+        result = np.zeros(int(left_bits.size * 2), dtype=np.int8)
+        for i in range(left_bits.size):
+            result[2 * i] = left_bits[i] ^ right_bits[i]
+            result[2 * i + 1] = right_bits[i]
+        return result
 
 
 def fork_branches(sc_list, max_list_size):

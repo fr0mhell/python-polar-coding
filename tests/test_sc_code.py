@@ -1,7 +1,9 @@
-from unittest import TestCase
-from polar_codes import SCPolarCode
-import numpy as np
 import pprint
+from unittest import TestCase
+
+import numpy as np
+
+from polar_codes import SCPolarCode
 
 
 class TestSCPolarCode(TestCase):
@@ -46,5 +48,3 @@ class TestSCPolarCode(TestCase):
 
             self.result.update({snr: [ber / ((m + 1) * self.N), fer / (m + 1)]})
             pprint.pprint(self.result)
-
-
