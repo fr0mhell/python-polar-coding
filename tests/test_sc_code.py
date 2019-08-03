@@ -33,9 +33,11 @@ class TestSCPolarCode(TestCase):
                 message = np.random.randint(0, 2, self.K)
                 encoded = self.codec.encode(message)
 
-                transmitted = (2 * encoded - 1) * np.sqrt(self.symbol_energy)
+                modulated = (2 * encoded - 1) * np.sqrt(self.symbol_energy)
 
-                llr = transmitted + np.sqrt(self.noise_power / 2) * np.random.normal(size=self.N)
+                with_noise = modulated + np.sqrt(self.noise_power / 2) * np.random.normal(size=self.N)
+
+                llr = -(4 * np.sqrt(self.symbol_energy) / self.noise_power) * with_noise
 
                 decoded = self.codec.decode(llr)
 
