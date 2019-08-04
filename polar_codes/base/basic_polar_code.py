@@ -104,7 +104,7 @@ class BasicPolarCode:
 
         """
         for i in range(n):
-            step = np.power(2, n - i) // 2
+            step = np.power(2, n - i - 1)
             pairs = np.power(2, i)
 
             for j in range(pairs):

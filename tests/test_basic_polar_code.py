@@ -69,9 +69,6 @@ class TestBasicPolarCode(TestCase):
         """Expected systematically encoded message"""
         return np.array([int(i) for i in self.sys_encoded])
 
-    def test_bhattacharyya_bounds(self):
-        """Test `bhattacharyya_bounds` method."""
-
     def test_building_polar_mask(self):
         """Test `build_polar_code_mask` method."""
         mask1 = self.non_systematic_code._compute_polar_mask()

@@ -24,6 +24,7 @@ class SCDecoder:
         self._state_dimension = int(np.ceil(np.log2(self.n)))
 
         self.current_position = 0
+        self.reversed_position = 0
         self.current_state = np.zeros(self.n, dtype=np.int8)
         self.current_level = 0
         self.previous_state = np.ones(self.n, dtype=np.int8)
@@ -89,6 +90,7 @@ class SCDecoder:
     def set_decoder_state(self, step):
         """Set current state of the decoder."""
         self.current_position = step
+        self.reversed_position = bitreversed(self.current_position, self.n)
         bits = np.unpackbits(np.array(
             [self.current_position], dtype=np.uint32
         ).byteswap().view(np.uint8))
@@ -109,53 +111,39 @@ class SCDecoder:
                 self.intermediate_llr[index] = self.compute_left_llr(llr)
 
             if value == 1:
-                end = self.current_position
-                if self.current_position % 2 == 1:
-                    start = self.current_position - 1
-                else:
-                    start = (
-                        self.current_position -
-                        int(np.power(2, self.n - self.current_level - 1))
-                    )
-
-                bits = self.intermediate_bits[index][start:end]
+                end = self.N
+                start = self.reversed_position - np.power(2, index)
+                step = np.power(2, index + 1)
+                bits = self.intermediate_bits[index + 1][start:end:step]
                 self.intermediate_llr[index] = self.compute_right_llr(llr, bits)
 
             llr = self.intermediate_llr[index]
 
     def make_decision(self):
         """Make decision about current decoding value."""
-        index = bitreversed(self.current_position, self.n)
-        mask_bit = self.mask[index]
+        mask_bit = self.mask[self.reversed_position]
         result = 0 if mask_bit == 0 else int(self.intermediate_llr[-1][0] < 0)
         return result
 
     def compute_intermediate_bits(self, decoded):
         """Compute intermediate BIT values."""
-        self.intermediate_bits[-1][self.current_position] = decoded
+        self.intermediate_bits[-1][self.reversed_position] = decoded
 
         if self.current_position % 2 == 0:
             return
 
-        end = self.current_position + 1
-        max_level = self._compute_max_level(end, self.n)
-        for i in range(self.n - 1, max_level - 1, -1):
-            start = end - int(np.power(2, self.n - i))
-            middle = (start + end) // 2
-
-            left_bits = self.intermediate_bits[i][start:middle]
-            right_bits = self.intermediate_bits[i][middle:end]
-            self.intermediate_bits[i - 1][start:end] = \
-                self.compute_bits(left_bits, right_bits)
+        msx_level = self._compute_max_level(self.current_position + 1, self.n)
+        for i in range(self.n, msx_level, -1):
+            bits = self.intermediate_bits[i]
+            self.intermediate_bits[i - 1] = self.compute_bits(bits, i, self.n)
 
     @staticmethod
     @numba.njit
     def _compute_max_level(end, n):
         """"""
         x = np.log2(end)
-
         if x == n:
-            return 1
+            return 0
         if x != int(x):
             return n - 1
         return n - int(x)
@@ -232,12 +220,19 @@ class SCDecoder:
 
     @staticmethod
     @numba.njit
-    def compute_bits(left_bits, right_bits):
+    def compute_bits(bits, current_level, n):
         """Compute intermediate bits."""
-        result = np.zeros(int(left_bits.size * 2), dtype=np.int8)
-        for i in range(left_bits.size):
-            result[2 * i] = left_bits[i] ^ right_bits[i]
-            result[2 * i + 1] = right_bits[i]
+        result = np.copy(bits)
+
+        step = np.power(2, current_level - 1)
+        pairs = np.power(2, n - current_level)
+
+        for i in range(pairs):
+            start = 2 * i * step
+
+            for j in range(step):
+                result[j+start] = result[j+start] ^ result[j+start+step]
+
         return result
 
 

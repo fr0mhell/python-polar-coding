@@ -23,14 +23,15 @@ class SCPolarCode(BasicPolarCode):
         self.decoder = SCDecoder(
             received_llr=llr_estimated_message,
             mask=self.polar_mask,
+            is_systematic=self.is_systematic
         )
 
         for step in range(self.N):
             self.decoder.decoder_step(step)
 
-        if self.is_systematic:
-            # for systematic code first need to mul decoding result with
-            # code generator matrix, and then extract information bits due to
-            # polar coding matrix
-            return self._extract(self._mul_matrix(self.decoder.decoded))
-        return self._extract(self.decoder.decoded)
+        # if self.is_systematic:
+        #     # for systematic code first need to mul decoding result with
+        #     # code generator matrix, and then extract information bits due to
+        #     # polar coding matrix
+        #     return self._extract(self._mul_matrix(self.decoder.result))
+        return self._extract(self.decoder.result)
