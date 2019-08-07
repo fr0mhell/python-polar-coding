@@ -1,7 +1,7 @@
 import numba
 import numpy as np
 
-from utils import bitreversed
+from ..base.functions import compute_encoding_step
 
 
 class SCDecoder:
@@ -80,7 +80,7 @@ class SCDecoder:
         self.compute_intermediate_llr(position)
         result = self.make_decision(position)
 
-        self.compute_intermediate_bits(result)
+        self.compute_intermediate_bits(result, position)
         self.update_decoder_state()
 
     def set_decoder_state(self, position):
@@ -96,45 +96,37 @@ class SCDecoder:
         for i in range(1, self.n + 1):
             llr = self.intermediate_llr[i - 1]
 
-            if self.current_state[i] == self.previous_state[i]:
+            if self.current_state[i - 1] == self.previous_state[i - 1]:
                 continue
 
-            if self.current_state[i] == 0:
+            if self.current_state[i - 1] == 0:
                 self.intermediate_llr[i] = self.compute_left_llr(llr)
                 continue
 
             end = position
-            start = end - np.array(2, self.n - i)
+            start = end - np.power(2, self.n - i)
             left_bits = self.intermediate_bits[i][start: end]
-            self.intermediate_bits[i] = self.compute_right_llr(llr, left_bits)
+            self.intermediate_llr[i] = self.compute_right_llr(llr, left_bits)
 
     def make_decision(self, position):
         """Make decision about current decoding value."""
         mask_bit = self.mask[position]
-        return int(self.intermediate_llr[-1][0] < 0) if mask_bit == 0 else 0
+        return int(self.intermediate_llr[-1][0] < 0) if mask_bit else 0
 
-    def compute_intermediate_bits(self, decoded):
+    def compute_intermediate_bits(self, decoded, position):
         """Compute intermediate BIT values."""
-        self.intermediate_bits[-1][self.reversed_position] = decoded
+        self.intermediate_bits[-1][position] = decoded
 
-        if self.current_position % 2 == 0:
-            return
+        for i in range(self.n - 1, -1, -1):
+            if self.current_state[i] == self.previous_state[i]:
+                continue
 
-        msx_level = self._compute_max_level(self.current_position + 1, self.n)
-        for i in range(self.n, msx_level, -1):
-            bits = self.intermediate_bits[i]
-            self.intermediate_bits[i - 1] = self.compute_bits(bits, i, self.n)
+            source = self.intermediate_bits[i + 1]
+            result = self.intermediate_bits[i]
 
-    @staticmethod
-    @numba.njit
-    def _compute_max_level(end, n):
-        """"""
-        x = np.log2(end)
-        if x == n:
-            return 0
-        if x != int(x):
-            return n - 1
-        return n - int(x)
+            self.intermediate_bits[i] = compute_encoding_step(
+                i, self.n, source, result
+            )
 
     def update_decoder_state(self):
         """Set next decoding position."""
@@ -184,12 +176,14 @@ class SCDecoder:
     @numba.njit
     def compute_left_llr(llr):
         """Compute LLR for left node."""
-        left_llr = np.zeros(llr.size // 2, dtype=np.double)
-        for i in range(left_llr.size):
+        N = llr.size // 2
+        left_llr = np.zeros(N, dtype=np.double)
+        for i in range(N):
+            left = llr[i]
+            right = llr[i + N]
             left_llr[i] = (
-                np.sign(llr[2 * i]) *
-                np.sign(llr[2 * i + 1]) *
-                np.fabs(llr[2 * i: 2 * i + 2]).min()
+                np.sign(left) * np.sign(right) *
+                np.fabs(np.array([left, right])).min()
             )
         return left_llr
 
@@ -197,30 +191,11 @@ class SCDecoder:
     @numba.njit
     def compute_right_llr(llr, left_bits):
         """Compute LLR for right node."""
-        right_llr = np.zeros(llr.size // 2, dtype=np.double)
-        for i in range(right_llr.size):
-            right_llr[i] = (
-                llr[2 * i + 1] -
-                (2 * left_bits[i] - 1) * llr[2 * i]
-            )
+        N = llr.size // 2
+        right_llr = np.zeros(N, dtype=np.double)
+        for i in range(N):
+            right_llr[i] = (llr[i + N] - (2 * left_bits[i] - 1) * llr[i])
         return right_llr
-
-    @staticmethod
-    @numba.njit
-    def compute_bits(bits, current_level, n):
-        """Compute intermediate bits."""
-        result = np.copy(bits)
-
-        step = np.power(2, current_level - 1)
-        pairs = np.power(2, n - current_level)
-
-        for i in range(pairs):
-            start = 2 * i * step
-
-            for j in range(step):
-                result[j+start] = result[j+start] ^ result[j+start+step]
-
-        return result
 
 
 def fork_branches(sc_list, max_list_size):
