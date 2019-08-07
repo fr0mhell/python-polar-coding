@@ -23,18 +23,14 @@ class SCDecoder:
         self._steps = int(np.log2(self._msg_length))
         self._state_dimension = int(np.ceil(np.log2(self.n)))
 
-        self.current_position = 0
-        self.reversed_position = 0
         self.current_state = np.zeros(self.n, dtype=np.int8)
-        self.current_level = 0
         self.previous_state = np.ones(self.n, dtype=np.int8)
-        self.previous_level = 0
 
         self.is_systematic = is_systematic
-        self.received_llr = received_llr
         self.mask = mask
         # LLR values at intermediate steps
-        self.intermediate_llr = self._get_intermediate_llr_structure()
+        self.intermediate_llr = self._get_intermediate_llr_structure(
+            received_llr)
         # Bit values at intermediate steps
         self.intermediate_bits = self._get_intermediate_bits_structure()
 
@@ -78,52 +74,44 @@ class SCDecoder:
             return self.intermediate_bits[0]
         return self.intermediate_bits[-1]
 
-    def decoder_step(self, step):
+    def decode_position(self, position):
         """Single step of SC-decoding algorithm to decode one bit."""
-        self.set_decoder_state(step)
-        self.compute_intermediate_llr()
-        decoded = self.make_decision()
+        self.set_decoder_state(position)
+        self.compute_intermediate_llr(position)
+        result = self.make_decision(position)
 
-        self.compute_intermediate_bits(decoded)
-        self.set_next_decoding_position()
+        self.compute_intermediate_bits(result)
+        self.update_decoder_state()
 
-    def set_decoder_state(self, step):
+    def set_decoder_state(self, position):
         """Set current state of the decoder."""
-        self.current_position = step
-        self.reversed_position = bitreversed(self.current_position, self.n)
-        bits = np.unpackbits(np.array(
-            [self.current_position], dtype=np.uint32
-        ).byteswap().view(np.uint8))
+        bits = np.unpackbits(
+            np.array(
+                [position], dtype=np.uint32).byteswap().view(np.uint8)
+        )
         self.current_state = bits[-self.n:]
-        self.current_level = \
-            np.argwhere(self.current_state != self.previous_state)[0][0]
 
-    def compute_intermediate_llr(self):
+    def compute_intermediate_llr(self, position):
         """Compute intermediate LLR values."""
-        llr = (self.received_llr if self.current_level == 0
-               else self.intermediate_llr[self.current_level - 1])
+        for i in range(1, self.n + 1):
+            llr = self.intermediate_llr[i - 1]
 
-        for index, value in enumerate(self.current_state):
-            if self.current_state[index] == self.previous_state[index]:
+            if self.current_state[i] == self.previous_state[i]:
                 continue
 
-            if value == 0:
-                self.intermediate_llr[index] = self.compute_left_llr(llr)
+            if self.current_state[i] == 0:
+                self.intermediate_llr[i] = self.compute_left_llr(llr)
+                continue
 
-            if value == 1:
-                end = self.N
-                start = self.reversed_position - np.power(2, index)
-                step = np.power(2, index + 1)
-                bits = self.intermediate_bits[index + 1][start:end:step]
-                self.intermediate_llr[index] = self.compute_right_llr(llr, bits)
+            end = position
+            start = end - np.array(2, self.n - i)
+            left_bits = self.intermediate_bits[i][start: end]
+            self.intermediate_bits[i] = self.compute_right_llr(llr, left_bits)
 
-            llr = self.intermediate_llr[index]
-
-    def make_decision(self):
+    def make_decision(self, position):
         """Make decision about current decoding value."""
-        mask_bit = self.mask[self.reversed_position]
-        result = 0 if mask_bit == 0 else int(self.intermediate_llr[-1][0] < 0)
-        return result
+        mask_bit = self.mask[position]
+        return int(self.intermediate_llr[-1][0] < 0) if mask_bit == 0 else 0
 
     def compute_intermediate_bits(self, decoded):
         """Compute intermediate BIT values."""
@@ -148,13 +136,12 @@ class SCDecoder:
             return n - 1
         return n - int(x)
 
-    def set_next_decoding_position(self):
+    def update_decoder_state(self):
         """Set next decoding position."""
         self.previous_state.ravel()[:self.n] = self.current_state
-        self.previous_level = self.current_level
 
-    def _get_intermediate_llr_structure(self):
-        intermediate_llr = list()
+    def _get_intermediate_llr_structure(self, received_llr):
+        intermediate_llr = [received_llr, ]
         length = self.N // 2
         while length > 0:
             intermediate_llr.append(np.zeros(length, dtype=np.double))

@@ -163,7 +163,7 @@ class TestSCDecoder(TestCase):
                 expected_bits[i]
             )
 
-        self.decoder.set_next_decoding_position()
+        self.decoder.update_decoder_state()
 
     def test_decoding_steps(self):
         """Test SC decoding process step-by-step."""
@@ -173,6 +173,6 @@ class TestSCDecoder(TestCase):
     def test_decoding_step_by_step(self):
         """Test `decoder_step` method."""
         for i in range(self.message.size):
-            self.decoder.decoder_step(i)
+            self.decoder.decode_position(i)
 
         np.testing.assert_array_equal(self.decoder.result, self.decoded)

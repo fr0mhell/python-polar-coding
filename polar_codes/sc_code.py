@@ -27,7 +27,7 @@ class SCPolarCode(BasicPolarCode):
         )
 
         for step in range(self.N):
-            self.decoder.decoder_step(step)
+            self.decoder.decode_position(step)
 
         # if self.is_systematic:
         #     # for systematic code first need to mul decoding result with
