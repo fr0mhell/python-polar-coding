@@ -1,9 +1,11 @@
 from operator import itemgetter
 
-import numpy as np
 import numba
+import numpy as np
+
 from utils import calculate_crc_16, check_crc_16, int_to_bin_list
 
+from .functions import compute_encoding_step
 from .polar_code_construction import bhattacharyya_bounds
 
 
@@ -82,36 +84,26 @@ class BasicPolarCode:
             message = self._add_crc(message)
 
         precoded = self._precode(message)
-        encoded = self.non_systematic_encode(precoded, self.n)
+        encoded = self.non_systematic_encode(precoded)
 
         if self.is_systematic:
             encoded *= self.polar_mask
-            encoded = self.non_systematic_encode(encoded, self.n)
+            encoded = self.non_systematic_encode(encoded)
 
         return encoded
 
-    @staticmethod
-    @numba.njit
-    def non_systematic_encode(message, n):
+    def non_systematic_encode(self, message):
         """Non-systematic encoding.
 
         Args:
             message (numpy.array): precoded message to encode.
-            n (int): `n` parameter of polar code.
 
         Returns:
             message (numpy.array): non-systematically encoded message.
 
         """
-        for i in range(n):
-            step = np.power(2, n - i - 1)
-            pairs = np.power(2, i)
-
-            for j in range(pairs):
-                start = j * 2 * step
-
-                for k in range(step):
-                    message[k+start] = message[k+start] ^ message[k+start+step]
+        for i in range(self.n - 1, -1, -1):
+            message = compute_encoding_step(i, self.n, message, message)
 
         return message
 
@@ -119,7 +111,9 @@ class BasicPolarCode:
         """Decode message."""
         raise NotImplementedError
 
-    def _calculate_polar_steps(self, codeword_length):
+    @staticmethod
+    @numba.njit
+    def _calculate_polar_steps(codeword_length):
         """Calculate number of polar steps `n`."""
         return int(np.log2(codeword_length))
 
@@ -164,27 +158,6 @@ class BasicPolarCode:
         precoded = np.zeros(self.N, dtype=int)
         precoded[self.polar_mask == 1] = info
         return precoded
-
-    def _mul_matrix(self, message):
-        """Multiply message of length N == codeword_length with
-        polar code matrix.
-
-        """
-        N = self.N
-        n = self.n
-        for i in range(n):
-            if i == 0:
-                message[0:N:2] = (message[0:N:2] + message[1:N:2]) % 2
-            elif i == (n - 1):
-                message[0:int(N/2)] = \
-                    (message[0:int(N/2)] + message[int(N/2):N]) % 2
-            else:
-                enc_step = int(np.power(2, i))
-                for j in range(enc_step):
-                    message[j:N:(2 * enc_step)] = \
-                        (message[j:N:(2 * enc_step)]
-                         + message[j + np.power(2, i):N:(2 * enc_step)]) % 2
-        return message
 
     def _extract(self, decoded):
         """Extract info bits from decoded message due to polar code mask"""
