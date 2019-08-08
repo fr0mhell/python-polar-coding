@@ -118,9 +118,6 @@ class SCDecoder:
         self.intermediate_bits[-1][position] = decoded
 
         for i in range(self.n - 1, -1, -1):
-            if self.current_state[i] == self.previous_state[i]:
-                continue
-
             source = self.intermediate_bits[i + 1]
             result = self.intermediate_bits[i]
 
