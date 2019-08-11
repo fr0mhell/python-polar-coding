@@ -1,52 +1,125 @@
 import pprint
 from unittest import TestCase
+from .mixins import BPSKModulatorMixin
 
 import numpy as np
 
 from polar_codes import SCPolarCode
 
 
-class TestSCPolarCode(TestCase):
+class TestSCPolarCode(BPSKModulatorMixin, TestCase):
+    messages = 10000
 
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
         cls.N = 1024
         cls.K = 512
         cls.codec = SCPolarCode(codeword_length=cls.N, info_length=cls.K)
-        cls.messages = 1000
+        cls.messages = 10000
         cls.snr_range = np.array([i / 2 for i in range(11)])
-        cls.symbol_energy = 1
-        cls.noise_power = 2
-
-        cls.messages_border = cls.messages // 10
-        cls.fer_border = cls.messages // 50
-
+        cls.bit_errors_data = dict()
+        cls.frame_errors_data = dict()
         cls.result = dict()
 
-    def test_sc_polar_code(self):
-        """Not a test exactly, but a model of SC polar code."""
-        for snr in self.snr_range:
-            ber, fer = 0, 0  # bit and frame error ratio
-            self.symbol_energy = (2 * self.K / self.N) * np.power(10, snr / 10)
+    def _message_transmission_test(self, snr_db):
+        """Basic workflow to compute BER and FER on message transmission"""
+        ber = fer = 0  # bit and frame error ratio
+        self.symbol_energy = self.compute_symbol_energy(self.K, self.N, snr_db)
 
-            for m in range(self.messages):
-                message = np.random.randint(0, 2, self.K)
-                encoded = self.codec.encode(message)
+        for m in range(self.messages):
+            message = np.random.randint(0, 2, self.K)
+            encoded = self.codec.encode(message)
+            llr = self.transmit_over_bpsk_channel(encoded, self.N)
+            decoded = self.codec.decode(llr)
 
-                modulated = (2 * encoded - 1) * np.sqrt(self.symbol_energy)
+            fails = np.sum(message != decoded)
+            ber += fails
+            fer += fails > 0
 
-                with_noise = modulated + np.sqrt(self.noise_power / 2) * np.random.normal(size=self.N)
+            if m >= self.ber_border and fer >= self.fer_border:
+                break
 
-                llr = -(4 * np.sqrt(self.symbol_energy) / self.noise_power) * with_noise
+        return [
+            {snr_db: ber / ((m + 1) * self.K)},
+            {snr_db: fer / (m + 1)},
+        ]
 
-                decoded = self.codec.decode(llr)
+    def test_snr_0_0_db(self):
+        snd_db = 0.0
+        bit_result, frame_result = self._message_transmission_test(snd_db)
+        self.bit_errors_data.update(bit_result)
+        self.frame_errors_data.update(frame_result)
 
-                fails = np.sum(message != decoded)
-                ber += fails
-                fer += fails > 0
+    def test_snr_0_5_db(self):
+        snd_db = 0.5
+        bit_result, frame_result = self._message_transmission_test(snd_db)
+        self.bit_errors_data.update(bit_result)
+        self.frame_errors_data.update(frame_result)
 
-                if m >= self.messages_border and fer >= self.fer_border:
-                    break
+    def test_snr_1_0_db(self):
+        snd_db = 1.0
+        bit_result, frame_result = self._message_transmission_test(snd_db)
+        self.bit_errors_data.update(bit_result)
+        self.frame_errors_data.update(frame_result)
 
-            self.result.update({snr: [ber / ((m + 1) * self.N), fer / (m + 1)]})
-            pprint.pprint(self.result)
+    def test_snr_1_5_db(self):
+        snd_db = 1.5
+        bit_result, frame_result = self._message_transmission_test(snd_db)
+        self.bit_errors_data.update(bit_result)
+        self.frame_errors_data.update(frame_result)
+
+    def test_snr_2_0_db(self):
+        snd_db = 2.0
+        bit_result, frame_result = self._message_transmission_test(snd_db)
+        self.bit_errors_data.update(bit_result)
+        self.frame_errors_data.update(frame_result)
+
+    def test_snr_2_5_db(self):
+        snd_db = 2.5
+        bit_result, frame_result = self._message_transmission_test(snd_db)
+        self.bit_errors_data.update(bit_result)
+        self.frame_errors_data.update(frame_result)
+
+    def test_snr_3_0_db(self):
+        snd_db = 3.0
+        bit_result, frame_result = self._message_transmission_test(snd_db)
+        self.bit_errors_data.update(bit_result)
+        self.frame_errors_data.update(frame_result)
+
+    def test_snr_3_5_db(self):
+        snd_db = 3.5
+        bit_result, frame_result = self._message_transmission_test(snd_db)
+        self.bit_errors_data.update(bit_result)
+        self.frame_errors_data.update(frame_result)
+
+    def test_snr_4_0_db(self):
+        snd_db = 4.0
+        bit_result, frame_result = self._message_transmission_test(snd_db)
+        self.bit_errors_data.update(bit_result)
+        self.frame_errors_data.update(frame_result)
+
+    def test_snr_4_5_db(self):
+        snd_db = 4.5
+        bit_result, frame_result = self._message_transmission_test(snd_db)
+        self.bit_errors_data.update(bit_result)
+        self.frame_errors_data.update(frame_result)
+
+    def test_snr_5_0_db(self):
+        snd_db = 5.0
+        bit_result, frame_result = self._message_transmission_test(snd_db)
+        self.bit_errors_data.update(bit_result)
+        self.frame_errors_data.update(frame_result)
+
+    def tearDown(self):
+        pprint.pprint(self.result)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.result.update(cls.codec.to_dict())
+        cls.result['messages'] = cls.bit_errors_data
+        cls.result['bit_error_rate'] = cls.bit_errors_data
+        cls.result['frame_error_rate'] = cls.frame_errors_data
+
+        # output of test result
+        pprint.pprint(cls.result)

@@ -44,6 +44,8 @@ class BasicPolarCode:
         self.polar_steps = self._calculate_polar_steps(codeword_length)
         self.polar_mask = self._compute_polar_mask()
 
+        self.decoder = None
+
     @property
     def N(self):
         """Get codeword length using the common name `N`."""
@@ -70,12 +72,14 @@ class BasicPolarCode:
     def to_dict(self):
         """Get code parameters as a dict."""
         return {
+            'type': self.__class__.__name__,
             'codeword_length': self.codeword_length,
             'info_length': self.info_length,
             'design_snr': self.design_snr,
             'is_systematic': self.is_systematic,
             'is_crc_aided': self.is_crc_aided,
-            'polar_mask': ''.join(str(m) for m in self.polar_mask)
+            'polar_mask': ''.join(str(m) for m in self.polar_mask),
+            'extra_data': dict(),
         }
 
     def encode(self, message):
@@ -109,7 +113,7 @@ class BasicPolarCode:
 
     def decode(self, received_message):
         """Decode message."""
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @staticmethod
     @numba.njit

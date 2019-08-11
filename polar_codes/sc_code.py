@@ -7,7 +7,6 @@ class SCPolarCode(BasicPolarCode):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
         self.decoder = None
 
     def decode(self, received_message):
@@ -28,10 +27,4 @@ class SCPolarCode(BasicPolarCode):
 
         for step in range(self.N):
             self.decoder.decode_position(step)
-
-        # if self.is_systematic:
-        #     # for systematic code first need to mul decoding result with
-        #     # code generator matrix, and then extract information bits due to
-        #     # polar coding matrix
-        #     return self._extract(self._mul_matrix(self.decoder.result))
         return self._extract(self.decoder.result)
