@@ -25,7 +25,8 @@ class TestSCDecoder(TestCase):
             -2.1233
         ])
         cls.mask = np.array([0, 1, 0, 1, 0, 1, 1, 1, ], dtype=np.int8)
-        cls.decoder = SCDecoder(cls.received_llr, cls.mask, is_systematic=False)  # noqa
+        cls.steps = cls.mask.size
+        cls.decoder = SCDecoder(cls.mask, is_systematic=False)
 
         cls.expected_llrs = [
             [
@@ -129,14 +130,6 @@ class TestSCDecoder(TestCase):
             ],
         ]
 
-    def test_initial_params(self):
-        self.assertEqual(self.decoder.n, 3)
-
-        start = self.decoder.N
-        for stage in self.decoder.intermediate_llr:
-            start = start // 2
-            self.assertEqual(stage.size, start)
-
     def _decoding_step(self, position):
         """Single step of decoding process."""
         self.decoder.set_decoder_state(position)
@@ -167,5 +160,6 @@ class TestSCDecoder(TestCase):
 
     def test_decoding_steps(self):
         """Test SC decoding process step-by-step."""
-        for i in range(self.received_llr.size):
+        self.decoder.initialize(self.received_llr)
+        for i in range(self.steps):
             self._decoding_step(i)

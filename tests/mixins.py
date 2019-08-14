@@ -16,11 +16,16 @@ class BPSKModulatorMixin:
         """"""
         return (2 * K / N) * np.power(10, snr_db / 10)
 
-    def transmit_over_bpsk_channel(self, message, N):
+    def transmit_over_bpsk_channel(self, message, N, noise=False):
         """"""
         modulated = (2 * message - 1) * np.sqrt(self.symbol_energy)
-        with_noise = modulated + np.sqrt(self.noise_power / 2) * np.random.randn(N)
-        llr = -(4 * np.sqrt(self.symbol_energy) / self.noise_power) * with_noise
+        transmitted = modulated
+
+        if noise:
+            transmitted += np.sqrt(self.noise_power / 2) * np.random.randn(N)
+
+        llr = -(4 * np.sqrt(self.symbol_energy) / self.noise_power) * transmitted
+
         return llr
 
 
