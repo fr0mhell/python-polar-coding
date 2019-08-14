@@ -13,26 +13,23 @@ class SCDecoder:
     metrics for forking SC List decoder tree.
 
     Args:
-        received_llr (np.array): LLRs of received message.
         mask (np.array): Polar code mask.
+        is_systematic (bool): Systematic code or not
 
     """
-    def __init__(self, received_llr, mask, is_systematic=True):
+    def __init__(self, mask, is_systematic=True):
 
-        self._msg_length = received_llr.size
+        self._msg_length = mask.size
         self._steps = int(np.log2(self._msg_length))
-        self._state_dimension = int(np.ceil(np.log2(self.n)))
-
-        self.current_state = np.zeros(self.n, dtype=np.int8)
-        self.previous_state = np.ones(self.n, dtype=np.int8)
-
         self.is_systematic = is_systematic
         self.mask = mask
+
         # LLR values at intermediate steps
-        self.intermediate_llr = self._get_intermediate_llr_structure(
-            received_llr)
+        self.intermediate_llr = None
         # Bit values at intermediate steps
-        self.intermediate_bits = self._get_intermediate_bits_structure()
+        self.intermediate_bits = None
+        self.current_state = np.zeros(self.n, dtype=np.int8)
+        self.previous_state = np.ones(self.n, dtype=np.int8)
 
         # Value of decoded bit set after forking
         # 0 for LLR > 0, 1 for LLR < 0
@@ -43,6 +40,32 @@ class SCDecoder:
         # Probability of containing the correct decoded data. Used to evaluate
         # the result after all bits decoded
         self.correct_prob = 1
+
+    def initialize(self, received_llr):
+        """Initialize decoder with received message"""
+        self.current_state = np.zeros(self.n, dtype=np.int8)
+        self.previous_state = np.ones(self.n, dtype=np.int8)
+        # LLR values at intermediate steps
+        self.intermediate_llr = self._get_intermediate_llr_structure(
+            received_llr)
+        # Bit values at intermediate steps
+        self.intermediate_bits = self._get_intermediate_bits_structure()
+
+    def __call__(self, position, *args, **kwargs):
+        """Single step of SC-decoding algorithm to decode one bit."""
+        self.set_decoder_state(position)
+        self.compute_intermediate_llr(position)
+        result = self.make_decision(position)
+
+        self.compute_intermediate_bits(result, position)
+        self.update_decoder_state()
+
+    @property
+    def result(self):
+        """Decoding result."""
+        if self.is_systematic:
+            return self.intermediate_bits[0]
+        return self.intermediate_bits[-1]
 
     def __eq__(self, other):
         return self.correct_prob == other.correct_prob
@@ -67,27 +90,10 @@ class SCDecoder:
     def n(self):
         return self._steps
 
-    @property
-    def result(self):
-        """Decoding result."""
-        if self.is_systematic:
-            return self.intermediate_bits[0]
-        return self.intermediate_bits[-1]
-
-    def decode_position(self, position):
-        """Single step of SC-decoding algorithm to decode one bit."""
-        self.set_decoder_state(position)
-        self.compute_intermediate_llr(position)
-        result = self.make_decision(position)
-
-        self.compute_intermediate_bits(result, position)
-        self.update_decoder_state()
-
     def set_decoder_state(self, position):
         """Set current state of the decoder."""
         bits = np.unpackbits(
-            np.array(
-                [position], dtype=np.uint32).byteswap().view(np.uint8)
+            np.array([position], dtype=np.uint32).byteswap().view(np.uint8)
         )
         self.current_state = bits[-self.n:]
 

@@ -7,7 +7,10 @@ class SCPolarCode(BasicPolarCode):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.decoder = None
+        self.decoder = SCDecoder(
+            mask=self.polar_mask,
+            is_systematic=self.is_systematic
+        )
 
     def decode(self, received_message):
         """Decode Polar code with SC decoding algorithm."""
@@ -19,12 +22,8 @@ class SCPolarCode(BasicPolarCode):
         Based on: https://arxiv.org/abs/0807.3917 (page 15).
 
         """
-        self.decoder = SCDecoder(
-            received_llr=llr_estimated_message,
-            mask=self.polar_mask,
-            is_systematic=self.is_systematic
-        )
+        self.decoder.initialize(llr_estimated_message)
 
         for step in range(self.N):
-            self.decoder.decode_position(step)
+            self.decoder(step)
         return self._extract(self.decoder.result)
