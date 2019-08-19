@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from utils import int_to_bin_list
+from polar_codes.utils import int_to_bin_list
 
 
 class UtilsTestCase(TestCase):

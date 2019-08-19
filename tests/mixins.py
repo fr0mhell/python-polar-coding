@@ -1,58 +1,57 @@
+import pprint
+
 import numpy as np
 
 
-class BPSKModulatorMixin:
+class BasePolarCodeTestMixin:
     """Provides simple BPSK modulator for polar codes testing."""
     messages = None
+    codec_class = None
+    channel_class = None
 
     @classmethod
     def setUpClass(cls):
-        cls.symbol_energy = 0
-        cls.noise_power = 2
         cls.ber_border = cls.messages // 10
         cls.fer_border = cls.messages // 50
+        cls.bit_errors_data = dict()
+        cls.frame_errors_data = dict()
+        cls.result = dict()
 
-    def compute_symbol_energy(self, K, N, snr_db):
-        """"""
-        return (2 * K / N) * np.power(10, snr_db / 10)
+    def _message_transmission_test(self, snr_db, with_noise=False):
+        """Basic workflow to compute BER and FER on message transmission"""
+        bit_errors = frame_errors = 0  # bit and frame error ratio
+        channel = self.channel_class(snr_db)
 
-    def transmit_over_bpsk_channel(self, message, N, noise=False):
-        """"""
-        modulated = (2 * message - 1) * np.sqrt(self.symbol_energy)
-        transmitted = modulated
+        for m in range(self.messages):
+            message = np.random.randint(0, 2, self.K)
+            encoded = self.codec.encode(message)
+            llr = channel.transmit(encoded, with_noise)
+            decoded = self.codec.decode(llr)
 
-        if noise:
-            transmitted += np.sqrt(self.noise_power / 2) * np.random.randn(N)
+            fails = np.sum(message != decoded)
+            bit_errors += fails
+            frame_errors += fails > 0
 
-        llr = -(4 * np.sqrt(self.symbol_energy) / self.noise_power) * transmitted
+        return [
+            {snr_db: bit_errors / (self.messages * self.K)},
+            {snr_db: frame_errors / self.messages},
+        ]
 
-        return llr
+    def _base_test(self, snr_db=0.0, with_noise=False):
+        bit_errors, frame_errors = self._message_transmission_test(
+            snr_db,
+            with_noise,
+        )
+        self.bit_errors_data.update(bit_errors)
+        self.frame_errors_data.update(frame_errors)
+        pprint.pprint(self.bit_errors_data)
+        pprint.pprint(self.frame_errors_data)
 
+    @classmethod
+    def tearDownClass(cls):
+        cls.result.update(cls.codec.to_dict())
+        cls.result['bit_error_rate'] = cls.bit_errors_data
+        cls.result['frame_error_rate'] = cls.frame_errors_data
 
-class BasicPolarDecoderTestMixin:
-    """Tests for `SCPolarCode`."""
-    input_dataset = None
-    output_dataset = None
-    code_class = None
-
-    def setUp(self):
-        self.common_params = {
-            'codeword_length': None,
-            'info_length': None,
-            'is_systematic': self.is_systematic,
-        }
-
-    @property
-    def is_systematic(self):
-        raise NotImplementedError
-
-    def _check_decoder_on_dataset(self):
-        """Check the decoder using the dataset."""
-        code = self.code_class(**self.common_params)
-        code_name = f'{code.N}, {code.K}'
-        input_vectors = self.input_dataset[code_name]
-        output_vectors = self.output_dataset[code_name]
-
-        for i, input_vector in enumerate(input_vectors):
-            result = code.decode(input_vector)
-            self.assertListEqual(list(result), output_vectors[i])
+        # output of test result
+        pprint.pprint(cls.result)
