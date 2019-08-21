@@ -3,8 +3,8 @@ from operator import itemgetter
 import numba
 import numpy as np
 
-from polar_codes.utils import calculate_crc_16, check_crc_16, int_to_bin_list
-
+from ..utils import (calculate_crc_16, check_crc_16, int_to_bin_list,
+                     reverse_bits)
 from .functions import compute_encoding_step
 from .polar_code_construction import bhattacharyya_bounds
 
@@ -121,28 +121,38 @@ class BasicPolarCode:
         """Calculate number of polar steps `n`."""
         return int(np.log2(codeword_length))
 
-    def _compute_polar_mask(self):
+    def _compute_polar_mask(self, reverse=True):
         """Compute polar mask."""
         if self.dumped_mask:
             return self._restore_dumped_mask()
 
         channel_estimates = bhattacharyya_bounds(self.N, self.design_snr)
         info_length = self.K + 16 if self.is_crc_aided else self.K
-        return self._build_polar_mask(info_length, channel_estimates)
+        return self._build_polar_mask(info_length, channel_estimates, reverse)
 
     def _restore_dumped_mask(self):
         """Restore polar mask from dump."""
         return np.array([int(b) for b in self.dumped_mask])
 
-    def _build_polar_mask(self, info_length, channel_estimates):
+    def _build_polar_mask(self, info_length, channel_estimates, reverse):
         """Build polar code Mask based on channel estimates.
 
         0 means frozen bit, 1 means information position.
 
+        Supports bit-reversal approach, described in Section III-D of
+        https://arxiv.org/abs/1307.7154
+
         """
         # represent each bit as tuple of 3 parameters:
         # (order, channel estimate, frozen / information position)
-        mask = [[i, b, 0] for i, b in enumerate(channel_estimates)]
+        if not reverse:
+            mask = [[i, b, 0] for i, b in enumerate(channel_estimates)]
+        else:
+            mask = [
+                [reverse_bits(i, self.n), b, 0]
+                for i, b in enumerate(channel_estimates)
+            ]
+
         # sort channels due to estimates
         mask = sorted(mask, key=itemgetter(1))
         # set information position for first `info_length` channels

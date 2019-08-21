@@ -20,6 +20,6 @@ def int_to_bin_list(value: int, size: int, as_array=True):
     return binary_list
 
 
-def bitreversed(value: int, size: int) -> int:
+def reverse_bits(value: int, size: int) -> int:
     """Reverse bits of n-bit integer value."""
     return int(''.join(reversed(np.binary_repr(value, width=size))), 2)
