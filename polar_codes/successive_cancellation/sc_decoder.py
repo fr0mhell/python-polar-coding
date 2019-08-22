@@ -67,21 +67,6 @@ class SCDecoder:
             return self.intermediate_bits[0]
         return self.intermediate_bits[-1]
 
-    def __eq__(self, other):
-        return self.correct_prob == other.correct_prob
-
-    def __gt__(self, other):
-        return self.correct_prob > other.correct_prob
-
-    def __ge__(self, other):
-        return self > other or self == other
-
-    def __lt__(self, other):
-        return not (self >= other)
-
-    def __le__(self, other):
-        return not (self > other)
-
     @property
     def N(self):
         return self._msg_length
@@ -149,6 +134,48 @@ class SCDecoder:
         ]
         return intermediate_bits
 
+    @staticmethod
+    @numba.njit
+    def compute_left_llr(llr):
+        """Compute LLR for left node."""
+        N = llr.size // 2
+        left_llr = np.zeros(N, dtype=np.double)
+        for i in range(N):
+            left = llr[i]
+            right = llr[i + N]
+            left_llr[i] = (
+                np.sign(left) * np.sign(right) *
+                np.fabs(np.array([left, right])).min()
+            )
+        return left_llr
+
+    @staticmethod
+    @numba.njit
+    def compute_right_llr(llr, left_bits):
+        """Compute LLR for right node."""
+        N = llr.size // 2
+        right_llr = np.zeros(N, dtype=np.double)
+        for i in range(N):
+            right_llr[i] = (llr[i + N] - (2 * left_bits[i] - 1) * llr[i])
+        return right_llr
+
+    """These are the methods related to list decoding."""
+
+    def __eq__(self, other):
+        return self.correct_prob == other.correct_prob
+
+    def __gt__(self, other):
+        return self.correct_prob > other.correct_prob
+
+    def __ge__(self, other):
+        return self > other or self == other
+
+    def __lt__(self, other):
+        return not (self >= other)
+
+    def __le__(self, other):
+        return not (self > other)
+
     def update_before_fork(self):
         """Update fork parameters.
 
@@ -174,31 +201,6 @@ class SCDecoder:
 
     def set_bit_as_frozen(self):
         """"""
-
-    @staticmethod
-    @numba.njit
-    def compute_left_llr(llr):
-        """Compute LLR for left node."""
-        N = llr.size // 2
-        left_llr = np.zeros(N, dtype=np.double)
-        for i in range(N):
-            left = llr[i]
-            right = llr[i + N]
-            left_llr[i] = (
-                np.sign(left) * np.sign(right) *
-                np.fabs(np.array([left, right])).min()
-            )
-        return left_llr
-
-    @staticmethod
-    @numba.njit
-    def compute_right_llr(llr, left_bits):
-        """Compute LLR for right node."""
-        N = llr.size // 2
-        right_llr = np.zeros(N, dtype=np.double)
-        for i in range(N):
-            right_llr[i] = (llr[i + N] - (2 * left_bits[i] - 1) * llr[i])
-        return right_llr
 
 
 def fork_branches(sc_list, max_list_size):
