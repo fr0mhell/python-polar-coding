@@ -69,6 +69,9 @@ class BasicPolarCode:
             f'CRC aided: {str(self.is_crc_aided)}\n'
         )
 
+    def _get_extra_params(self):
+        return dict()
+
     def to_dict(self):
         """Get code parameters as a dict."""
         return {
@@ -79,7 +82,7 @@ class BasicPolarCode:
             'is_systematic': self.is_systematic,
             'is_crc_aided': self.is_crc_aided,
             'polar_mask': ''.join(str(m) for m in self.polar_mask),
-            'extra_data': dict(),
+            'extra_params': self._get_extra_params(),
         }
 
     def encode(self, message):

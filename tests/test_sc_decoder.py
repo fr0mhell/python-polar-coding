@@ -8,7 +8,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from polar_codes.successive_cancellation.sc_decoder import SCDecoder
+from polar_codes.decoders import SCDecoder
 
 
 class TestSCDecoder(TestCase):

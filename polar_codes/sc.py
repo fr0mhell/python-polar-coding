@@ -1,5 +1,5 @@
 from .base import BasicPolarCode
-from .successive_cancellation import SCDecoder
+from .decoders import SCDecoder
 
 
 class SCPolarCode(BasicPolarCode):

@@ -7,8 +7,6 @@ from ..base.functions import compute_encoding_step
 class SCDecoder:
     """Implements SC decoding algorithm.
 
-    Can be used for SC List decoding.
-
     Stores initial and intermediate LLR values, intermediate bit values and
     metrics for forking SC List decoder tree.
 
@@ -24,22 +22,14 @@ class SCDecoder:
         self.is_systematic = is_systematic
         self.mask = mask
 
+        self.current_decision = 0
+
         # LLR values at intermediate steps
         self.intermediate_llr = None
         # Bit values at intermediate steps
         self.intermediate_bits = None
         self.current_state = np.zeros(self.n, dtype=np.int8)
         self.previous_state = np.ones(self.n, dtype=np.int8)
-
-        # Value of decoded bit set after forking
-        # 0 for LLR > 0, 1 for LLR < 0
-        self.fork_value = 1
-        # Metric that allow to rate `quality` of the branch - probability of
-        # correct decoding decision for the current bit
-        self.fork_metric = 1
-        # Probability of containing the correct decoded data. Used to evaluate
-        # the result after all bits decoded
-        self.correct_prob = 1
 
     def initialize(self, received_llr):
         """Initialize decoder with received message"""
@@ -55,9 +45,9 @@ class SCDecoder:
         """Single step of SC-decoding algorithm to decode one bit."""
         self.set_decoder_state(position)
         self.compute_intermediate_llr(position)
-        result = self.make_decision(position)
+        self.current_decision = self.make_decision(position)
 
-        self.compute_intermediate_bits(result, position)
+        self.compute_intermediate_bits(self.current_decision, position)
         self.update_decoder_state()
 
     @property
@@ -158,50 +148,3 @@ class SCDecoder:
         for i in range(N):
             right_llr[i] = (llr[i + N] - (2 * left_bits[i] - 1) * llr[i])
         return right_llr
-
-    """These are the methods related to list decoding."""
-
-    def __eq__(self, other):
-        return self.correct_prob == other.correct_prob
-
-    def __gt__(self, other):
-        return self.correct_prob > other.correct_prob
-
-    def __ge__(self, other):
-        return self > other or self == other
-
-    def __lt__(self, other):
-        return not (self >= other)
-
-    def __le__(self, other):
-        return not (self > other)
-
-    def update_before_fork(self):
-        """Update fork parameters.
-
-        LLR = ln(P0) - ln(P1), P0 + P1 = 1
-        exp(LLR) = P0 / P1
-        P0 = exp(LLR) / (exp(LLR) + 1)
-        P1 = 1 / (exp(LLR) + 1)
-        Pi = ( (1 - i) * exp(LLR) + i ) / (exp(LLR) + 1)
-
-        """
-
-    def fork(self):
-        """Make a copy of SC branch for List decoding"""
-
-    def update_correct_probability(self):
-        """"""
-
-    def update_decoding_position(self, pos):
-        """"""
-
-    def decode_current_bit(self):
-        """"""
-
-    def set_bit_as_frozen(self):
-        """"""
-
-
-def fork_branches(sc_list, max_list_size):
-    """Forks SC branches."""

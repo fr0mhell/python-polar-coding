@@ -1,1 +1,2 @@
-from .sc_code import SCPolarCode
+from .sc import SCPolarCode
+from .sc_list import SCListPolarCode
