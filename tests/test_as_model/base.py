@@ -81,7 +81,11 @@ class BasePolarCodeTestMixin:
         # output of test result
         pprint.pprint(cls.result)
 
+        with open(cls._get_filename(), 'w') as fp:
+            json.dump(cls.result, fp)
+
+    @classmethod
+    def _get_filename(cls):
         N = cls.code_parameters['codeword_length']
         K = cls.code_parameters['info_length']
-        with open(f'{N}_{K}.json', 'w') as fp:
-            json.dump(cls.result, fp)
+        return f'{N}_{K}.json'

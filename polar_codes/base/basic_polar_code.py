@@ -26,7 +26,7 @@ class BasicPolarCode:
 
     """
 
-    def __init__(self, codeword_length, info_length, design_snr=0,
+    def __init__(self, codeword_length, info_length, design_snr=0.0,
                  is_systematic=True, is_crc_aided=False, dumped_mask=None):
 
         assert info_length < codeword_length, (

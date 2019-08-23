@@ -57,6 +57,11 @@ class ListDecoderPathMixin:
         new_path.current_decision = (self.current_decision + 1) % 2
         # Invert the current decision metric
         new_path.current_decision_metric = 1 - self.current_decision_metric
+
+        # Update path metrics for both paths
+        self.path_metric *= self.current_decision_metric
+        new_path.path_metric *= new_path.current_decision_metric
+
         # Copy intermediate LLR values
         new_path.intermediate_llr = [
             np.array(llrs) for llrs in self.intermediate_llr
@@ -151,5 +156,5 @@ class SCListDecoder:
     def _compute_bits(self, position):
         """Compute bits of each path."""
         for path in self.paths:
-            path.compute_intermediate_bits(self.current_decision, position)
+            path.compute_intermediate_bits(path.current_decision, position)
             path.update_decoder_state()
