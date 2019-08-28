@@ -1,7 +1,8 @@
-anytree
+firebase-admin
 ipdb
 ipython
+isort
 numba
 numpy
 pycrc
-isort
+unittest-parallel

@@ -1,0 +1,8 @@
+version: '3'
+services:
+  base: &base
+    build: .
+
+  sc_list:
+    <<: *base
+    command: unittest-parallel -p test_verify_sc_list_decoder.py
