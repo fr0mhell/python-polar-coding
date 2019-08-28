@@ -11,7 +11,7 @@ class SimpleBPSKModAWGNChannel:
     """
     def __init__(self, snr_db):
         self.snr_db = snr_db
-        self.noise_power = 2.0
+        self.noise_power = 1.0
         self.symbol_energy = self._compute_symbol_energy(
             self.snr_db,
             self.noise_power,

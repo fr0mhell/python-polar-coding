@@ -3,4 +3,6 @@
 *~
 .xlsx
 .idea
+.pytest_cache
+firestore/*credentials*
 tests/_trial_temp*

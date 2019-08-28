@@ -11,7 +11,7 @@ import numpy as np
 from polar_codes.decoders import SCListDecoder
 
 
-class TestSCDecoder(TestCase):
+class TestSCListDecoder(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.received_llr = np.array([
@@ -19,7 +19,6 @@ class TestSCDecoder(TestCase):
             0.0506, -0.0552, -1.5304, -2.1233,
         ])
         cls.mask = np.array([0, 1, 0, 1, 0, 1, 1, 1, ], dtype=np.int8)
-        cls.steps = cls.mask.size
         cls.decoder = SCListDecoder(
             cls.mask,
             is_systematic=False,
@@ -109,15 +108,15 @@ class TestSCDecoder(TestCase):
                 ],
                 [
                     cls.received_llr,
-                    np.array([-2.6767, 0.0552, -1.4217, -0.477]),
-                    np.array([1.4217, -0.0552]),
-                    np.array([-0.0552]),
+                    np.array([-2.6767, -8.7879, -1.4217, -0.477]),
+                    np.array([1.4217, 0.477]),
+                    np.array([0.477]),
                 ],
                 [
                     cls.received_llr,
-                    np.array([2.7779, -8.7879, -1.4217, -0.477]),
-                    np.array([-1.4217, 0.477]),
-                    np.array([-0.477]),
+                    np.array([2.7779, 8.6775, -1.4217, -0.477]),
+                    np.array([-1.4217, -0.477]),
+                    np.array([0.477]),
                 ],
             ],
             # Step 5
@@ -136,15 +135,15 @@ class TestSCDecoder(TestCase):
                 ],
                 [
                     cls.received_llr,
-                    np.array([-2.6767, 0.0552, -1.4217, -0.477]),
-                    np.array([1.4217, -0.0552]),
-                    np.array([1.3665]),
+                    np.array([-2.6767, -8.7879, -1.4217, -0.477]),
+                    np.array([1.4217, 0.477]),
+                    np.array([1.8987]),
                 ],
                 [
                     cls.received_llr,
-                    np.array([2.7779, -8.7879, -1.4217, -0.477]),
-                    np.array([-1.4217, 0.477]),
-                    np.array([-0.9447]),
+                    np.array([2.7779,  8.6775, -1.4217, -0.477]),
+                    np.array([-1.4217, -0.477]),
+                    np.array([-1.8987]),
                 ],
             ],
             # Step 6
@@ -163,15 +162,15 @@ class TestSCDecoder(TestCase):
                 ],
                 [
                     cls.received_llr,
-                    np.array([-2.6767, 0.0552, -1.4217, -0.477]),
-                    np.array([-4.0984, -0.4218]),
-                    np.array([0.4218]),
+                    np.array([-2.6767, -8.7879, -1.4217, -0.477]),
+                    np.array([-4.0984, -9.2649]),
+                    np.array([4.0984]),
                 ],
                 [
                     cls.received_llr,
-                    np.array([2.7779, -8.7879, -1.4217, -0.477]),
-                    np.array([-4.1996, 8.3109]),
-                    np.array([-4.1996]),
+                    np.array([2.7779,  8.6775, -1.4217, -0.477]),
+                    np.array([-4.1996, -9.1545]),
+                    np.array([4.1996]),
                 ],
             ],
             # Step 7
@@ -190,36 +189,36 @@ class TestSCDecoder(TestCase):
                 ],
                 [
                     cls.received_llr,
-                    np.array([-2.6767, 0.0552, -1.4217, -0.477]),
-                    np.array([-4.0984, -0.4218]),
-                    np.array([-4.5202]),
+                    np.array([-2.6767, -8.7879, -1.4217, -0.477]),
+                    np.array([-4.0984, -9.2649]),
+                    np.array([-13.3633]),
                 ],
                 [
                     cls.received_llr,
-                    np.array([2.7779, -8.7879, -1.4217, -0.477]),
-                    np.array([-4.1996, 8.3109]),
-                    np.array([12.5105]),
+                    np.array([2.7779,  8.6775, -1.4217, -0.477]),
+                    np.array([-4.1996, -9.1545]),
+                    np.array([-13.3541]),
                 ],
             ],
         ]
 
         cls.expected_metrics = [
             # Step 0
-            [1, ],
+            [-0.0506, ],
             # Step 1
-            [0.50115, 0.49885],
+            [-0.0506, -0.0552],
             # Step 2
-            [0.50115, 0.49885],
+            [-0.0506, -0.0552],
             # Step 3
-            [0.42756, 0.42502, 0.07383, 0.07359],
+            [-0.0506, -0.0552, -1.8056, -1.8102],
             # Step 4
-            [0.42756, 0.42502, 0.07383, 0.07359],
+            [-0.0506, -0.0552, -1.8056, -1.8102],
             # Step 5
-            [0.42565, 0.42313, 0.05883, 0.05299],
+            [-0.0506, -0.0552, -1.8056, -1.8102],
             # Step 6
-            [0.42004, 0.41808, 0.03553, 0.05221],
+            [-0.0506, -0.0552, -1.8056, -1.8102],
             # Step 7
-            [0.42004, 0.41808, 0.03515, 0.05221],
+            [-0.0506, -0.0552, -1.8056, -1.8102],
         ]
 
         cls.expected_bits = [
@@ -364,10 +363,10 @@ class TestSCDecoder(TestCase):
                     np.array([0, 0, 0, 0, 0, 0, 0, 0, ]),
                 ],
                 [
-                    np.array([1, 0, 1, 0, 0, 1, 1, 0, ]),
-                    np.array([1, 1, 0, 0, 0, 1, 1, 0, ]),
-                    np.array([1, 1, 0, 0, 1, 1, 1, 0, ]),
-                    np.array([0, 1, 0, 0, 0, 1, 1, 0, ]),
+                    np.array([0, 0, 0, 0, 1, 1, 0, 0, ]),
+                    np.array([1, 1, 0, 0, 1, 1, 0, 0, ]),
+                    np.array([1, 1, 0, 0, 1, 1, 0, 0, ]),
+                    np.array([0, 1, 0, 0, 0, 1, 0, 0, ]),
                 ],
             ],
             # Step 7
@@ -391,16 +390,29 @@ class TestSCDecoder(TestCase):
                     np.array([0, 0, 0, 0, 0, 0, 0, 1, ]),
                 ],
                 [
-                    np.array([1, 0, 1, 0, 0, 1, 1, 0, ]),
-                    np.array([1, 1, 0, 0, 0, 1, 1, 0, ]),
-                    np.array([1, 1, 0, 0, 1, 1, 1, 0, ]),
-                    np.array([0, 1, 0, 0, 0, 1, 1, 0, ]),
+                    np.array([1, 1, 1, 1, 0, 0, 1, 1, ]),
+                    np.array([1, 1, 0, 0, 0, 0, 1, 1, ]),
+                    np.array([1, 1, 0, 0, 1, 1, 1, 1, ]),
+                    np.array([0, 1, 0, 0, 0, 1, 0, 1, ]),
                 ],
             ],
         ]
 
+    @property
+    def K(self):
+        return np.sum(self.mask)
+
+    @property
+    def N(self):
+        return self.mask.size
+
     def _decoding_step(self, position):
         """Single step of decoding process."""
+        print(position)
+
+        if position == 4:
+            a = 2
+
         self.decoder(position)
         for i, path in enumerate(self.decoder.paths):
 
@@ -420,13 +432,13 @@ class TestSCDecoder(TestCase):
 
             expected_metrics = self.expected_metrics[position]
             np.testing.assert_almost_equal(
-                path.path_metric,
+                path._path_metric,
                 expected_metrics[i],
                 decimal=4
             )
 
     def test_decoding_steps(self):
-        """Test SC decoding process step-by-step."""
+        """Test SC list decoding process step-by-step."""
         self.decoder.initialize(self.received_llr)
-        for i in range(self.steps):
+        for i in range(self.N):
             self._decoding_step(i)

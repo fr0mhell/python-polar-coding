@@ -144,7 +144,8 @@ class TestSCDecoder(TestCase):
             )
 
         # Check decoding result
-        decoded = self.decoder.make_decision(position)
+        self.decoder.make_decision(position)
+        decoded = self.decoder._current_decision
         self.assertEqual(decoded, self.expected_decoded[position])
 
         # Check intermediate bits computation

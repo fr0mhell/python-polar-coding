@@ -1,21 +1,12 @@
-from unittest import TestCase
-
 from polar_codes import SCPolarCode
 
-from .base import BasePolarCodeTestMixin
-from .channels import SimpleBPSKModAWGNChannel
+from .base import VerificationChannelTestCase
 
 
-class TestSCPolarCode(BasePolarCodeTestMixin, TestCase):
-    """Example of how to model Polar Codes using unittest."""
+class VerifySystematicSCCode(VerificationChannelTestCase):
     messages = 10000
+    firestore_dump = True
     codec_class = SCPolarCode
-    channel_class = SimpleBPSKModAWGNChannel
-    code_parameters = {
-        'codeword_length': 256,
-        'info_length': 128,
-        'is_systematic': True
-    }
 
     def test_snr_0_0_db(self):
         snd_db = 0.0

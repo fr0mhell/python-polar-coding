@@ -22,7 +22,7 @@ class SCDecoder:
         self.is_systematic = is_systematic
         self.mask = mask
 
-        self.current_decision = 0
+        self._current_decision = 0
 
         # LLR values at intermediate steps
         self.intermediate_llr = None
@@ -45,9 +45,8 @@ class SCDecoder:
         """Single step of SC-decoding algorithm to decode one bit."""
         self.set_decoder_state(position)
         self.compute_intermediate_llr(position)
-        self.current_decision = self.make_decision(position)
-
-        self.compute_intermediate_bits(self.current_decision, position)
+        self.make_decision(position)
+        self.compute_intermediate_bits(position)
         self.update_decoder_state()
 
     @property
@@ -92,11 +91,13 @@ class SCDecoder:
     def make_decision(self, position):
         """Make decision about current decoding value."""
         mask_bit = self.mask[position]
-        return int(self.intermediate_llr[-1][0] < 0) if mask_bit else 0
+        self._current_decision = (
+            int(self.intermediate_llr[-1][0] < 0) if mask_bit == 1 else 0
+        )
 
-    def compute_intermediate_bits(self, decoded, position):
+    def compute_intermediate_bits(self, position):
         """Compute intermediate BIT values."""
-        self.intermediate_bits[-1][position] = decoded
+        self.intermediate_bits[-1][position] = self._current_decision
 
         for i in range(self.n - 1, -1, -1):
             source = self.intermediate_bits[i + 1]
