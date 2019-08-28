@@ -39,8 +39,7 @@ class SCListPolarCode(BasicPolarCode):
 
         # If the code is not CRC-aided, return the result of the best path
         if not self.is_crc_aided:
-            best_result = self.decoder.paths[0].result
-            return self._extract(best_result)
+            return self._extract(self.decoder.best_result)
 
         return self._get_correct_result_using_crc()
 
@@ -50,9 +49,9 @@ class SCListPolarCode(BasicPolarCode):
         If no correct paths found, get the result from best path.
 
         """
-        for path in self.decoder.paths:
-            result = self._extract(path.result)
-            if self._check_crc(result):
-                return self._remove_crc(result)
+        for result in self.decoder.result:
+            answer = self._extract(result)
+            if self._check_crc(answer):
+                return self._remove_crc(answer)
 
-        return self._extract(self.decoder.paths[0].result)
+        return self._extract(self.decoder.result[0])

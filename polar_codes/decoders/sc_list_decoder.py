@@ -14,16 +14,14 @@ class ListDecoderPathMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # probability that decoding decision is correct for the current bit
-        self.current_decision_metric = 1
         # Probability that current path contains correct decoding result
-        self.path_metric = 1
+        self._path_metric = 0
 
     def __eq__(self, other):
-        return self.path_metric == other.path_metric
+        return self._path_metric == other._path_metric
 
     def __gt__(self, other):
-        return self.path_metric > other.path_metric
+        return self._path_metric > other._path_metric
 
     def __ge__(self, other):
         return self > other or self == other
@@ -34,33 +32,19 @@ class ListDecoderPathMixin:
     def __le__(self, other):
         return not (self > other)
 
-    @staticmethod
-    @numba.njit
-    def evaluate_current_decision(mask_position, llr, decision):
-        """Evaluate probability of the current decision being correct.
+    def __str__(self):
+        return (
+            f'LLR: {self.current_llr}; '
+            f'Decision: {self._current_decision}; '
+            f'Path metric: {self._path_metric}'
+        )
 
-        LLR = ln(P0) - ln(P1), P0 + P1 = 1
-        exp(LLR) = P0 / P1
-        P0 = exp(LLR) / (exp(LLR) + 1)
-        P1 = 1 / (exp(LLR) + 1)
-        Pi = ( (1 - i) * exp(LLR) + i ) / (exp(LLR) + 1)
-
-        """
-        # The decision in frozen position is 100% correct
-        if mask_position == 0:
-            return 1
-        return ((1 - decision) * np.exp(llr) + decision) / (np.exp(llr) + 1)
+    @property
+    def current_llr(self):
+        return self.intermediate_llr[-1][0]
 
     def __deepcopy__(self, memodict={}):
         new_path = self.__class__(self.mask, is_systematic=self.is_systematic)
-        # Invert the current decision
-        new_path.current_decision = (self.current_decision + 1) % 2
-        # Invert the current decision metric
-        new_path.current_decision_metric = 1 - self.current_decision_metric
-
-        # Update path metrics for both paths
-        self.path_metric *= self.current_decision_metric
-        new_path.path_metric *= new_path.current_decision_metric
 
         # Copy intermediate LLR values
         new_path.intermediate_llr = [
@@ -75,10 +59,33 @@ class ListDecoderPathMixin:
         # Copy previous state
         new_path.previous_state = np.array(self.previous_state)
 
+        # Copy path metric
+        new_path._path_metric = self._path_metric
+
+        # Make opposite decisions for each path
+        self._current_decision = 0
+        new_path._current_decision = 1
+
         return new_path
 
+    def update_path_metric(self):
+        """Update path metrics using LLR-based metric.
+
+        Source: https://arxiv.org/abs/1411.7282 Section III-B
+
+        """
+        if self.current_llr >= 0:
+            self._path_metric -= (self.current_llr * self._current_decision)
+        if self.current_llr < 0:
+            self._path_metric += (self.current_llr * (1 - self._current_decision))
+
     def split_path(self):
-        """Make a copy of SC path with another decision."""
+        """Make a copy of SC path with another decision.
+
+        If LLR of the current position is out of bounds, there is no sense
+        of splitting path because LLR >= 20 means 0 and LLR <= -20 means 1.
+
+        """
         new_path = deepcopy(self)
         return [self, new_path]
 
@@ -95,14 +102,25 @@ class SCListDecoder:
         is_systematic (bool): Systematic code or not
 
     """
-    def __init__(self, mask, is_systematic=True, list_size=4):
+    def __init__(self, mask, is_systematic=True, list_size=1):
         self.is_systematic = is_systematic
         self.mask = mask
-        self.current_decision = 0
         self.list_size = list_size
+        self.paths = [SCPath(mask, is_systematic), ]
 
-        path = SCPath(mask, is_systematic)
-        self.paths = [path, ]
+    @property
+    def L(self):
+        return self.list_size
+
+    @property
+    def result(self):
+        """Decoding result."""
+        return [path.result for path in self.paths]
+
+    @property
+    def best_result(self):
+        """Result from the best path."""
+        return self.paths[0].result
 
     def initialize(self, received_llr):
         """Initialize paths with received message."""
@@ -111,50 +129,60 @@ class SCListDecoder:
 
     def __call__(self, position, *args, **kwargs):
         """Single step of SC-decoding algorithm to decode one bit."""
-        self._evaluate_paths(position)
+        self.set_decoder_state(position)
+        self.compute_intermediate_llr(position)
 
-        # Populate and evaluate SC paths when decoding information positions
         if self.mask[position] == 1:
-            populated_paths = self._populate_path()
-            self.paths = self._select_best_paths(populated_paths)
+            self._populate_paths()
+        if self.mask[position] == 0:
+            self.set_frozen_value()
 
+        self._update_paths_metrics()
+        self._select_best_paths()
         self._compute_bits(position)
 
-    @property
-    def L(self):
-        return self.list_size
-
-    def _evaluate_paths(self, position):
-        """Evaluate probability metrics of SC paths."""
+    def set_decoder_state(self, position):
+        """Set current state of each path."""
         for path in self.paths:
             path.set_decoder_state(position)
-            path.compute_intermediate_llr(position)
-            path.current_decision = path.make_decision(position)
-            path.current_decision_metric = path.evaluate_current_decision(
-                self.mask[position],
-                path.intermediate_llr[-1][0],
-                path.current_decision,
-            )
 
-    def _populate_path(self):
+    def compute_intermediate_llr(self, position):
+        """Compute intermediate LLR values of each path."""
+        for path in self.paths:
+            path.compute_intermediate_llr(position)
+
+    def set_frozen_value(self):
+        """Set current position to frozen values of each path."""
+        for path in self.paths:
+            path._current_decision = 0
+
+    def _populate_paths(self):
         """Populate SC paths with alternative decisions."""
         new_paths = list()
         for path in self.paths:
-            new_paths += path.split_path()
-        return new_paths
+            split_result = path.split_path()
+            new_paths += split_result
 
-    def _select_best_paths(self, populated_paths):
+        self.paths = new_paths
+
+    def _update_paths_metrics(self):
+        """Update path metric of each path."""
+        for path in self.paths:
+            path.update_path_metric()
+
+    def _select_best_paths(self):
         """Select best of populated paths.
 
-        If the number of paths is less then L/2, all populated paths returned.
+        If the number of paths is less then L, all populated paths returned.
 
         """
-        if len(populated_paths) <= self.L // 2:
-            return populated_paths
-        return sorted(populated_paths, reverse=True)[:self.L//2]
+        if len(self.paths) <= self.L:
+            self.paths = sorted(self.paths, reverse=True)
+        else:
+            self.paths = sorted(self.paths, reverse=True)[:self.L]
 
     def _compute_bits(self, position):
         """Compute bits of each path."""
         for path in self.paths:
-            path.compute_intermediate_bits(path.current_decision, position)
+            path.compute_intermediate_bits(position)
             path.update_decoder_state()
