@@ -91,23 +91,21 @@ class FastSSCNode(Node):
             self._bits = self._compute_bits_repetition(self.llr)
 
     @staticmethod
-    # @numba.njit
+    @numba.njit
     def _make_hard_decision(llr):
-        # njit incompatible operation
-        return np.array(llr < 0, dtype=np.int8)
+        return np.array([l < 0 for l in llr], dtype=np.int8)
 
     @staticmethod
-    # @numba.njit
+    @numba.njit
     def _compute_bits_spc(llr):
-        # njit incompatible operation
-        bits = np.array(llr < 0, dtype=np.int8)
+        bits = np.array([l < 0 for l in llr], dtype=np.int8)
         parity = np.sum(bits) % 2
         arg_min = np.abs(llr).argmin()
         bits[arg_min] = (bits[arg_min] + parity) % 2
         return bits
 
     @staticmethod
-    # @numba.njit
+    @numba.njit
     def _compute_bits_repetition(llr):
         return (np.zeros(llr.size, dtype=np.int8)
                 if np.sum(llr) >= 0 else np.ones(llr.size, dtype=np.int8))
@@ -176,19 +174,6 @@ class FastSSCDecoder(SCDecoder):
 
     def compute_intermediate_llr(self, leaf):
         """Compute intermediate LLR values."""
-        # for i, node in enumerate(leaf.path[1:], 1):
-        #     llr = node.parent.llr
-        #
-        #     if self.current_state[i - 1] == self.previous_state[i - 1]:
-        #         continue
-        #
-        #     if node.is_left:
-        #         node.llr = self.compute_left_llr(llr)
-        #         continue
-        #
-        #     left_node = node.siblings[0]
-        #     left_bits = left_node.bits
-        #     node.llr = self.compute_right_llr(llr, left_bits)
         for node in leaf.path[1:]:
             if node.is_computed:
                 continue
