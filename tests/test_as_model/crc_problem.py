@@ -1,8 +1,11 @@
-from unittest import TestCase
-from .channels import VerificationChannel
-from polar_codes import SCListPolarCode
-import numpy as np
 import json
+from unittest import TestCase
+
+import numpy as np
+
+from polar_codes import SCListPolarCode
+
+from .channels import VerificationChannel
 
 
 class TestCRCListDecoding(TestCase):
@@ -11,7 +14,7 @@ class TestCRCListDecoding(TestCase):
     K = 512
     crc_size = 16
     list_size = 8
-    messages = 10
+    messages = 10000
     snr_db = 1.0
 
     def setUp(self):
