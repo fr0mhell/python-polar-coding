@@ -1,7 +1,6 @@
+from .fast_ssc_decoder import FastSSCDecoder
 from .sc_decoder import SCDecoder
 from .sc_list_decoder import SCListDecoder
-from .fast_ssc_decoder import FastSSCDecoder
-
 
 __all__ = (
     'FastSSCDecoder',

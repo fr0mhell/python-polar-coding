@@ -2,7 +2,7 @@ import numba
 import numpy as np
 from anytree import Node, PreOrderIter
 
-from . import SCDecoder
+from .sc_decoder import SCDecoder
 
 
 class FastSSCNode(Node):
