@@ -1,6 +1,6 @@
 import numba
 import numpy as np
-from anytree import Node
+from anytree import Node, PreOrderIter
 
 from . import SCDecoder
 
@@ -37,6 +37,8 @@ class FastSSCNode(Node):
         self._llr = np.zeros(self.N, dtype=np.double)
         self._bits = np.zeros(self.N, dtype=np.int8)
 
+        self.is_computed = False
+
         self._build_fast_ssc_tree()
 
     @property
@@ -65,11 +67,11 @@ class FastSSCNode(Node):
 
     @property
     def is_left(self):
-        return self._node_type == FastSSCNode.LEFT
+        return self.name == FastSSCNode.LEFT
 
     @property
     def is_right(self):
-        return self._node_type == FastSSCNode.RIGHT
+        return self.name == FastSSCNode.RIGHT
 
     @property
     def is_fast_ssc_node(self):
@@ -80,7 +82,7 @@ class FastSSCNode(Node):
             raise TypeError('Cannot make decision in not a leaf node.')
 
         if self._node_type == FastSSCNode.ZERO_NODE:
-            self._bits = np.zeros(self.N)
+            self._bits = np.zeros(self.N, dtype=np.int8)
         if self._node_type == FastSSCNode.ONE_NODE:
             self._bits = self._make_hard_decision(self.llr)
         if self._node_type == FastSSCNode.SINGLE_PARITY_CHECK:
@@ -107,7 +109,8 @@ class FastSSCNode(Node):
     @staticmethod
     # @numba.njit
     def _compute_bits_repetition(llr):
-        return np.zeros(llr.size) if np.sum(llr) >= 0 else np.ones(llr.size)
+        return (np.zeros(llr.size, dtype=np.int8)
+                if np.sum(llr) >= 0 else np.ones(llr.size, dtype=np.int8))
 
     def _get_node_type(self):
         """Get the type of Fast SSC Node.
@@ -140,3 +143,95 @@ class FastSSCNode(Node):
         left_mask, right_mask = np.split(self._mask, 2)
         FastSSCNode(mask=left_mask, name=FastSSCNode.LEFT, parent=self)
         FastSSCNode(mask=right_mask, name=FastSSCNode.RIGHT, parent=self)
+
+
+class FastSSCDecoder(SCDecoder):
+    """Implements Fast SSC decoding algorithm."""
+
+    def __init__(self, mask, is_systematic=True):
+        super().__init__(mask, is_systematic=is_systematic)
+
+        self._fast_ssc_tree = FastSSCNode(mask=self.mask)
+        self._position = 0
+
+    def initialize(self, received_llr):
+        """Initialize decoder with received message."""
+        # Reset the state of the tree before decoding
+        for node in PreOrderIter(self._fast_ssc_tree):
+            node.is_computed = False
+        self.current_state = np.zeros(self.n, dtype=np.int8)
+        self.previous_state = np.ones(self.n, dtype=np.int8)
+
+        # LLR values at intermediate steps
+        self._position = 0
+        self._fast_ssc_tree.root.llr = received_llr
+
+    def __call__(self, *args, **kwargs):
+        for leaf in self._fast_ssc_tree.leaves:
+            self.set_decoder_state(self._position)
+            self.compute_intermediate_llr(leaf)
+            self.make_decision(leaf)
+            self.compute_intermediate_bits(leaf)
+            self.set_next_state(leaf.N)
+
+    def compute_intermediate_llr(self, leaf):
+        """Compute intermediate LLR values."""
+        # for i, node in enumerate(leaf.path[1:], 1):
+        #     llr = node.parent.llr
+        #
+        #     if self.current_state[i - 1] == self.previous_state[i - 1]:
+        #         continue
+        #
+        #     if node.is_left:
+        #         node.llr = self.compute_left_llr(llr)
+        #         continue
+        #
+        #     left_node = node.siblings[0]
+        #     left_bits = left_node.bits
+        #     node.llr = self.compute_right_llr(llr, left_bits)
+        for node in leaf.path[1:]:
+            if node.is_computed:
+                continue
+
+            llr = node.parent.llr
+
+            if node.is_left:
+                node.llr = self.compute_left_llr(llr)
+                continue
+
+            left_node = node.siblings[0]
+            left_bits = left_node.bits
+            node.llr = self.compute_right_llr(llr, left_bits)
+            node.is_computed = True
+
+    def make_decision(self, leaf):
+        """Make decision about current decoding value."""
+        leaf.make_decision()
+
+    def compute_intermediate_bits(self, node):
+        """Compute intermediate BIT values."""
+        if node.is_left:
+            return
+
+        if node.is_root:
+            return
+
+        parent = node.parent
+        left = node.siblings[0]
+        parent.bits = self.compute_parent_bits(left.bits, node.bits)
+        return self.compute_intermediate_bits(parent)
+
+    def set_next_state(self, leaf_size):
+        self._position += leaf_size
+
+    @property
+    def result(self):
+        if self.is_systematic:
+            return self._fast_ssc_tree.root.bits
+
+    @staticmethod
+    # @numba.njit
+    def compute_parent_bits(left, right):
+        """Compute bits of a parent Node."""
+        # append - njit incompatible
+        return np.append((left + right) % 2, right)
