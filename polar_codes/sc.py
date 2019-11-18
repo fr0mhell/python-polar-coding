@@ -22,7 +22,7 @@ class SCPolarCode(BasicPolarCode):
         Based on: https://arxiv.org/abs/0807.3917 (page 15).
 
         """
-        self.decoder.initialize(llr_estimated_message)
+        self.decoder.set_initial_state(llr_estimated_message)
 
         for step in range(self.N):
             self.decoder(step)

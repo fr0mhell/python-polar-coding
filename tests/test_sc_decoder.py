@@ -15,14 +15,8 @@ class TestSCDecoder(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.received_llr = np.array([
-            -2.7273,
-            -8.7327,
-            0.1087,
-            1.6463,
-            0.0506,
-            -0.0552,
-            -1.5304,
-            -2.1233
+            -2.7273, -8.7327,  0.1087,  1.6463,
+             0.0506, -0.0552, -1.5304, -2.1233,
         ])
         cls.mask = np.array([0, 1, 0, 1, 0, 1, 1, 1, ], dtype=np.int8)
         cls.steps = cls.mask.size
@@ -136,7 +130,7 @@ class TestSCDecoder(TestCase):
 
         # Check intermediate LLRs computation
         expected_llr = self.expected_llrs[position]
-        self.decoder.compute_intermediate_llr(position)
+        self.decoder.compute_intermediate_alpha(position)
         for i in range(self.decoder.n + 1):
             np.testing.assert_array_almost_equal(
                 self.decoder.intermediate_llr[i],
@@ -144,12 +138,12 @@ class TestSCDecoder(TestCase):
             )
 
         # Check decoding result
-        self.decoder.make_decision(position)
+        self.decoder.compute_beta(position)
         decoded = self.decoder._current_decision
         self.assertEqual(decoded, self.expected_decoded[position])
 
         # Check intermediate bits computation
-        self.decoder.compute_intermediate_bits(decoded, position)
+        self.decoder.compute_intermediate_beta(position)
         expected_bits = self.expected_bits[position]
         for i in range(self.decoder.n + 1):
             np.testing.assert_array_almost_equal(
@@ -161,6 +155,6 @@ class TestSCDecoder(TestCase):
 
     def test_decoding_steps(self):
         """Test SC decoding process step-by-step."""
-        self.decoder.initialize(self.received_llr)
+        self.decoder.set_initial_state(self.received_llr)
         for i in range(self.steps):
             self._decoding_step(i)

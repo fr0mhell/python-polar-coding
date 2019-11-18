@@ -18,6 +18,6 @@ class FastSSCPolarCode(BasicPolarCode):
 
     def _fast_ssc_decode(self, llr_estimated_message):
         """Fast Simplified Successive cancellation decoder."""
-        self.decoder.initialize(llr_estimated_message)
+        self.decoder.set_initial_state(llr_estimated_message)
         self.decoder()
         return self._extract(self.decoder.result)

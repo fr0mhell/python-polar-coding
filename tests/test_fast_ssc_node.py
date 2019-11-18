@@ -15,33 +15,33 @@ class FastSSCNodeTest(TestCase):
         node = FastSSCNode(np.zeros(4))
         self.assertEqual(node._node_type, FastSSCNode.ZERO_NODE)
 
-        node.llr = self.llr
-        node.make_decision()
-        np.testing.assert_equal(node.bits, np.zeros(4))
+        node.alpha = self.llr
+        node.compute_leaf_beta()
+        np.testing.assert_equal(node.beta, np.zeros(4))
 
     def test_one_node(self):
         node = FastSSCNode(np.ones(4))
         self.assertEqual(node._node_type, FastSSCNode.ONE_NODE)
 
-        node.llr = self.llr
-        node.make_decision()
-        np.testing.assert_equal(node.bits, np.array([1, 0, 1, 0]))
+        node.alpha = self.llr
+        node.compute_leaf_beta()
+        np.testing.assert_equal(node.beta, np.array([1, 0, 1, 0]))
 
     def test_spc_node(self):
         node = FastSSCNode(np.array([0, 1, 1, 1]))
         self.assertEqual(node._node_type, FastSSCNode.SINGLE_PARITY_CHECK)
 
-        node.llr = self.llr
-        node.make_decision()
-        np.testing.assert_equal(node.bits, np.array([1, 0, 1, 0]))
+        node.alpha = self.llr
+        node.compute_leaf_beta()
+        np.testing.assert_equal(node.beta, np.array([1, 0, 1, 0]))
 
     def test_repetition_node(self):
         node = FastSSCNode(np.array([0, 0, 0, 1]))
         self.assertEqual(node._node_type, FastSSCNode.REPETITION)
 
-        node.llr = self.llr
-        node.make_decision()
-        np.testing.assert_equal(node.bits, np.array([0, 0, 0, 0]))
+        node.alpha = self.llr
+        node.compute_leaf_beta()
+        np.testing.assert_equal(node.beta, np.array([0, 0, 0, 0]))
 
     def test_with_multiple_nodes(self):
         node = FastSSCNode(np.array([
