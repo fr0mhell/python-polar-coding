@@ -125,7 +125,7 @@ class SCListDecoder:
     def initialize(self, received_llr):
         """Initialize paths with received message."""
         for path in self.paths:
-            path.initialize(received_llr)
+            path.set_initial_state(received_llr)
 
     def __call__(self, position, *args, **kwargs):
         """Single step of SC-decoding algorithm to decode one bit."""
@@ -149,7 +149,7 @@ class SCListDecoder:
     def compute_intermediate_llr(self, position):
         """Compute intermediate LLR values of each path."""
         for path in self.paths:
-            path.compute_intermediate_llr(position)
+            path.compute_intermediate_alpha(position)
 
     def set_frozen_value(self):
         """Set current position to frozen values of each path."""
@@ -184,5 +184,5 @@ class SCListDecoder:
     def _compute_bits(self, position):
         """Compute bits of each path."""
         for path in self.paths:
-            path.compute_intermediate_bits(position)
+            path.compute_intermediate_beta(position)
             path.update_decoder_state()

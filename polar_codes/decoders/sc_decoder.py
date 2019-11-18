@@ -1,7 +1,7 @@
 import numba
 import numpy as np
 
-from ..base.functions import compute_encoding_step
+from ..base.functions import basic_llr_computation, compute_encoding_step
 
 
 class SCDecoder:
@@ -31,7 +31,7 @@ class SCDecoder:
         self.current_state = np.zeros(self.n, dtype=np.int8)
         self.previous_state = np.ones(self.n, dtype=np.int8)
 
-    def initialize(self, received_llr):
+    def set_initial_state(self, received_llr):
         """Initialize decoder with received message"""
         self.current_state = np.zeros(self.n, dtype=np.int8)
         self.previous_state = np.ones(self.n, dtype=np.int8)
@@ -44,9 +44,9 @@ class SCDecoder:
     def __call__(self, position, *args, **kwargs):
         """Single step of SC-decoding algorithm to decode one bit."""
         self.set_decoder_state(position)
-        self.compute_intermediate_llr(position)
-        self.make_decision(position)
-        self.compute_intermediate_bits(position)
+        self.compute_intermediate_alpha(position)
+        self.compute_beta(position)
+        self.compute_intermediate_beta(position)
         self.update_decoder_state()
 
     @property
@@ -71,7 +71,7 @@ class SCDecoder:
         )
         self.current_state = bits[-self.n:]
 
-    def compute_intermediate_llr(self, position):
+    def compute_intermediate_alpha(self, position):
         """Compute intermediate LLR values."""
         for i in range(1, self.n + 1):
             llr = self.intermediate_llr[i - 1]
@@ -80,22 +80,22 @@ class SCDecoder:
                 continue
 
             if self.current_state[i - 1] == 0:
-                self.intermediate_llr[i] = self.compute_left_llr(llr)
+                self.intermediate_llr[i] = self.compute_left_alpha(llr)
                 continue
 
             end = position
             start = end - np.power(2, self.n - i)
             left_bits = self.intermediate_bits[i][start: end]
-            self.intermediate_llr[i] = self.compute_right_llr(llr, left_bits)
+            self.intermediate_llr[i] = self.compute_right_alpha(llr, left_bits)
 
-    def make_decision(self, position):
+    def compute_beta(self, position):
         """Make decision about current decoding value."""
         mask_bit = self.mask[position]
         self._current_decision = (
             int(self.intermediate_llr[-1][0] < 0) if mask_bit == 1 else 0
         )
 
-    def compute_intermediate_bits(self, position):
+    def compute_intermediate_beta(self, position):
         """Compute intermediate BIT values."""
         self.intermediate_bits[-1][position] = self._current_decision
 
@@ -120,32 +120,28 @@ class SCDecoder:
         return intermediate_llr
 
     def _get_intermediate_bits_structure(self):
-        intermediate_bits = [
-            np.zeros(self.N, dtype=np.int8) for _ in range(self.n + 1)
-        ]
+        intermediate_bits = [np.zeros(self.N, dtype=np.int8)
+                             for _ in range(self.n + 1)]
         return intermediate_bits
 
     @staticmethod
     @numba.njit
-    def compute_left_llr(llr):
-        """Compute LLR for left node."""
+    def compute_left_alpha(llr):
+        """Compute Alpha (LLR) for left node."""
         N = llr.size // 2
         left_llr = np.zeros(N, dtype=np.double)
         for i in range(N):
             left = llr[i]
             right = llr[i + N]
-            left_llr[i] = (
-                np.sign(left) * np.sign(right) *
-                np.fabs(np.array([left, right])).min()
-            )
+            left_llr[i] = basic_llr_computation(left, right)
         return left_llr
 
     @staticmethod
     @numba.njit
-    def compute_right_llr(llr, left_bits):
-        """Compute LLR for right node."""
+    def compute_right_alpha(llr, left_beta):
+        """Compute Alpha (LLR) for right node."""
         N = llr.size // 2
         right_llr = np.zeros(N, dtype=np.double)
         for i in range(N):
-            right_llr[i] = (llr[i + N] - (2 * left_bits[i] - 1) * llr[i])
+            right_llr[i] = (llr[i + N] - (2 * left_beta[i] - 1) * llr[i])
         return right_llr
