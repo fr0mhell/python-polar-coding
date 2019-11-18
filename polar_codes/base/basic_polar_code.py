@@ -130,15 +130,18 @@ class BasicPolarCode:
             return self._restore_dumped_mask()
 
         self.channel_estimates = bhattacharyya_bounds(self.N, self.design_snr)
+        if reverse:
+            self.channel_estimates = np.array([
+                self.channel_estimates[reverse_bits(i, self.n)] for i in range(self.N)
+            ])
         info_length = self.K + 16 if self.is_crc_aided else self.K
-        return self._build_polar_mask(info_length, self.channel_estimates,
-                                      reverse)
+        return self._build_polar_mask(info_length)
 
     def _restore_dumped_mask(self):
         """Restore polar mask from dump."""
         return np.array([int(b) for b in self.dumped_mask])
 
-    def _build_polar_mask(self, info_length, channel_estimates, reverse):
+    def _build_polar_mask(self, info_length):
         """Build polar code Mask based on channel estimates.
 
         0 means frozen bit, 1 means information position.
@@ -149,13 +152,7 @@ class BasicPolarCode:
         """
         # represent each bit as tuple of 3 parameters:
         # (order, channel estimate, frozen / information position)
-        if not reverse:
-            mask = [[i, b, 0] for i, b in enumerate(channel_estimates)]
-        else:
-            mask = [
-                [reverse_bits(i, self.n), b, 0]
-                for i, b in enumerate(channel_estimates)
-            ]
+        mask = [[i, b, 0] for i, b in enumerate(self.channel_estimates)]
 
         # sort channels due to estimates
         mask = sorted(mask, key=itemgetter(1))
