@@ -95,7 +95,7 @@ class TestRCSCANDecoderComplex(TestCase):
         )
 
         expected_result = np.array(
-            [1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, ],
+            [1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, ],
             dtype=np.int8
         )
         np.testing.assert_equal(decoder.result, expected_result)

@@ -129,9 +129,10 @@ class BasicPolarCode:
         if self.dumped_mask:
             return self._restore_dumped_mask()
 
-        channel_estimates = bhattacharyya_bounds(self.N, self.design_snr)
+        self.channel_estimates = bhattacharyya_bounds(self.N, self.design_snr)
         info_length = self.K + 16 if self.is_crc_aided else self.K
-        return self._build_polar_mask(info_length, channel_estimates, reverse)
+        return self._build_polar_mask(info_length, self.channel_estimates,
+                                      reverse)
 
     def _restore_dumped_mask(self):
         """Restore polar mask from dump."""
