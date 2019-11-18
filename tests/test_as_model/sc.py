@@ -5,7 +5,6 @@ from .base import VerificationChannelTestCase
 
 class VerifySystematicSCCode(VerificationChannelTestCase):
     messages = 10000
-    firestore_dump = True
     codec_class = SCPolarCode
 
     def test_snr_0_0_db(self):

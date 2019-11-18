@@ -5,7 +5,6 @@ from .base import VerificationChannelTestCase
 
 class VerifySystematicSCListCode(VerificationChannelTestCase):
     messages = 10000
-    firestore_dump = True
     codec_class = SCListPolarCode
 
     @classmethod

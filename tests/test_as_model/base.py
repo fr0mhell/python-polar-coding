@@ -4,8 +4,6 @@ from unittest import TestCase
 
 import numpy as np
 
-from firestore import firestore_client
-
 from .channels import SimpleBPSKModAWGNChannel, VerificationChannel
 
 
@@ -15,7 +13,6 @@ class BasePolarCodeTestMixin:
     codec_class = None
     channel_class = None
     code_parameters = dict()
-    firestore_dump = False
 
     @classmethod
     def setUpClass(cls):
@@ -50,6 +47,14 @@ class BasePolarCodeTestMixin:
             bit_errors += fails
             frame_errors += fails > 0
 
+            if not with_noise and fails:
+                print('iteration:', m)
+                print('message:', message)
+                print('encoded:', encoded)
+                print('transmitted:', llr)
+                print('decoded:', decoded)
+                print()
+
         return [
             bit_errors / (self.messages * self.K),
             frame_errors / self.messages,
@@ -63,6 +68,8 @@ class BasePolarCodeTestMixin:
             with_noise,
         )
 
+        # `-1` means simulation without noise
+        snr_db = snr_db if with_noise else '-1'
         self.bit_errors_data.update({str(snr_db): bit_errors})
         self.frame_errors_data.update({str(snr_db): frame_errors})
 
@@ -84,23 +91,11 @@ class BasePolarCodeTestMixin:
         self.result['frame_error_rate'] = self.frame_errors_data
         self.result['messages'] = self.messages
 
-        # output of test result
-        # pprint.pprint(self.result)
-
-        if self.firestore_dump:
-            firestore_client.document(self.result_path).set(self.result)
-
     @classmethod
     def tearDownClass(cls):
         cls.result['bit_error_rate'] = cls.bit_errors_data
         cls.result['frame_error_rate'] = cls.frame_errors_data
         cls.result['messages'] = cls.messages
-
-        # output of test result
-        # pprint.pprint(cls.result)
-
-        if cls.firestore_dump:
-            firestore_client.document(cls.result_path).set(cls.result)
 
         with open(cls._get_filename(), 'w') as fp:
             json.dump(cls.result, fp)
