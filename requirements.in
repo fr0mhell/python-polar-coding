@@ -1,9 +1,13 @@
 anytree
-firebase-admin
+# Enables caching for `anytree` during search
+fastcache
 ipdb
 ipython
 isort
 numba
 numpy
 pycrc
-unittest-parallel
+pymongo
+
+# Required for using `numba` with CUDA
+scikit-cuda
