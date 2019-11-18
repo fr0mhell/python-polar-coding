@@ -1,7 +1,7 @@
 from concurrent.futures import ProcessPoolExecutor
+from datetime import datetime
 from math import ceil
 from random import shuffle
-from datetime import datetime
 
 from modelling.channel import VerificationChannel
 

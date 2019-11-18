@@ -17,3 +17,35 @@ def compute_encoding_step(level, n, source, result):
             result[p + start + step] = source[p + start + step]
 
     return result
+
+
+@numba.njit
+def basic_llr_computation(a, b):
+    """Basic function to compute intermediate LLR values."""
+    return np.sign(a) * np.sign(b) * np.fabs(np.array([a, b])).min()
+
+
+@numba.njit
+def function_1(a, b, c):
+    """Function 1.
+
+    Source: doi:10.1007/s12243-018-0634-7, formula 1.
+
+    """
+    return basic_llr_computation(a, b + c)
+
+
+@numba.njit
+def function_2(a, b, c):
+    """Function 2.
+
+    Source: doi:10.1007/s12243-018-0634-7, formula 2.
+
+    """
+    return basic_llr_computation(a, b) + c
+
+
+@numba.njit
+def make_hard_decision(soft_input):
+    """Makes hard decision based on soft input values (LLR)."""
+    return np.array([s < 0 for s in soft_input], dtype=np.int8)
