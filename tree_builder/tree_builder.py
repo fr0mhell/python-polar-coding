@@ -19,9 +19,9 @@ class FastSSCTreeBuilder(FastSSCNode):
     def to_dict(self):
         return {
             'type': self._node_type,
-            'mask': self._mask,
-            'metrics': self.metrics,
-            'pos': self.name
+            'mask': ' '.join([str(i) for i in self._mask]),
+            'metrics': np.array_str(self.metrics, precision=3),
+            'pos': self.name,
         }
 
     def _get_node_type(self):
@@ -71,26 +71,33 @@ parameters = [
         'codeword_length': l,
         'info_length': int(l * c),
         'design_snr': d,
-        'node_min_size': n,
     }
     for l in lengths
     for c in code_speeds
     for d in design
-    for n in node_sizes
 ]
 
 trees = list()
 for p in parameters:
-    tree_params = p.copy()
 
     pc = SCPolarCode(**p)
     mask = pc.polar_mask
     estimates = pc.channel_estimates
-    tree = FastSSCTreeBuilder(mask=mask, channel_metrics=estimates, **p)
 
-    tree_params['leaves'] = [l.to_dict() for l in tree.leaves]
+    for n in node_sizes:
+        tree_params = p.copy()
+        tree_params['node_min_size'] = n
 
-    trees.append(tree_params)
+        tree = FastSSCTreeBuilder(
+            mask=mask,
+            channel_metrics=estimates,
+            node_min_size=n
+        )
+
+        tree_params['leaves'] = [l.to_dict() for l in tree.leaves]
+
+        trees.append(tree_params)
+        print(p)
 
 with open('polar_trees.json', 'w') as f:
     json.dump(trees, f)
