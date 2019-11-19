@@ -81,9 +81,9 @@ class RCSCANDecoder(FastSSCDecoder):
     """
     node_class = RCSCANNode
 
-    def set_initial_state(self, received_llr):
+    def __init__(self, *args, **kwargs):
         """Additionally initialize BETA values of nodes."""
-        super().set_initial_state(received_llr)
+        super().__init__(*args, **kwargs)
 
         for leaf in self._decoding_tree.leaves:
             leaf.initialize_leaf_beta()
@@ -92,6 +92,8 @@ class RCSCANDecoder(FastSSCDecoder):
         """Reset intermediate BETA values.
 
         Run this before calling `__call__` method.
+
+        TODO: Add JIT
 
         """
         for node in PreOrderIter(self._decoding_tree):

@@ -29,14 +29,6 @@ class RCSCANPolarCode(BasicPolarCode):
             self.decoder.set_initial_state(llr_estimated_message)
             self.decoder()
 
-            if not self.is_crc_aided:
-                continue
-
-            # Validate the result using CRC
-            result = self._extract(self.decoder.result)
-            if self._check_crc(result):
-                return result
-
         return self._extract(self.decoder.result)
 
     def _get_extra_params(self):
