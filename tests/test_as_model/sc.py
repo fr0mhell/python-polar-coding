@@ -7,18 +7,6 @@ class VerifySystematicSCCode(VerificationChannelTestCase):
     messages = 10000
     codec_class = SCPolarCode
 
-    def test_snr_0_0_db(self):
-        snd_db = 0.0
-        self._base_test(snd_db)
-
-    def test_snr_0_5_db(self):
-        snd_db = 0.5
-        self._base_test(snd_db)
-
-    def test_snr_1_0_db(self):
-        snd_db = 1.0
-        self._base_test(snd_db)
-
     def test_snr_1_5_db(self):
         snd_db = 1.5
         self._base_test(snd_db)

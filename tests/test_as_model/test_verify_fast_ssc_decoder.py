@@ -55,3 +55,12 @@ class TestSystematicSCCode_2048_1536(VerifyFastSSCCode):
         'info_length': 1536,
         'is_systematic': True
     }
+
+
+class TestSystematicSCCode_8192_4096(VerifyFastSSCCode):
+    code_parameters = {
+        'codeword_length': 8192,
+        'info_length': 4096,
+        'design_snr': 1.4,
+        'is_systematic': True,
+    }

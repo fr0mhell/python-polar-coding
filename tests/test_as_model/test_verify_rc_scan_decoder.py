@@ -265,33 +265,3 @@ class TestSystematicCode_8192_4096_iter_4(VerifyRCSCANCode):
         'is_systematic': True,
         'iterations': 4,
     }
-
-
-class TestSystematicCode_2048_1024_iter_4_crc(VerifyRCSCANCode):
-    code_parameters = {
-        'codeword_length': 2048,
-        'info_length': 1024,
-        'is_systematic': True,
-        'iterations': 4,
-        'is_crc_aided': True,
-    }
-
-
-class TestSystematicCode_2048_512_iter_4_crc(VerifyRCSCANCode):
-    code_parameters = {
-        'codeword_length': 2048,
-        'info_length': 512,
-        'is_systematic': True,
-        'iterations': 4,
-        'is_crc_aided': True,
-    }
-
-
-class TestSystematicCode_2048_1536_iter_4_crc(VerifyRCSCANCode):
-    code_parameters = {
-        'codeword_length': 2048,
-        'info_length': 1536,
-        'is_systematic': True,
-        'iterations': 4,
-        'is_crc_aided': True,
-    }
