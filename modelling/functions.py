@@ -1,6 +1,10 @@
-import numpy as np
+from math import ceil
+from random import shuffle
 
-from modelling.db import client
+import numpy as np
+from pymongo import MongoClient
+
+from modelling.mongo import URI
 
 
 def single_transmission(code, channel):
@@ -28,7 +32,7 @@ def single_transmission(code, channel):
     return bit_errors, word_errors
 
 
-def experiment(code, channel, db_name, collection, messages=1000):
+def simulation_task(code, channel, db_name, collection, messages=1000):
     bit_errors = word_errors = 0
 
     for m in range(messages):
@@ -45,4 +49,33 @@ def experiment(code, channel, db_name, collection, messages=1000):
         'channel': str(channel),
     })
 
+    client = MongoClient(URI)
     client[db_name][collection].insert_one(data)
+
+
+def generate_simulation_parameters(
+    code_cls,
+    channel_cls,
+    N,
+    code_rates,
+    snr_range,
+    repetitions
+):
+    """Get list of (PolarCode, Channel) pairs."""
+    combinations = [
+        (
+            code_cls(
+                codeword_length=N,
+                info_length=ceil(N * cr),
+                is_systematic=True),
+            channel_cls(
+                snr_db=snr,
+                N=N,
+                K=ceil(N * cr)
+            )
+        ) for cr in code_rates for snr in snr_range
+    ] * repetitions
+
+    shuffle(combinations)
+
+    return combinations

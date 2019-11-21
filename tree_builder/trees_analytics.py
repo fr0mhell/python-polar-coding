@@ -1,7 +1,6 @@
 import json
 from collections import Counter
 
-
 with open('polar_trees.json') as f:
     code_data = json.load(f)
 

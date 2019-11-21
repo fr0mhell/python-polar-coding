@@ -1,7 +1,9 @@
-import numpy as np
 import json
-from polar_codes.decoders.fast_ssc_decoder import FastSSCNode
+
+import numpy as np
+
 from polar_codes import SCPolarCode
+from polar_codes.decoders.fast_ssc_decoder import FastSSCNode
 
 
 class FastSSCTreeBuilder(FastSSCNode):
