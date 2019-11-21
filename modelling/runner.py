@@ -26,7 +26,8 @@ def run_model(workers, task, list_of_parameters):
 
 def executor(code_class, codeword_length, code_rates, snr_range,
              task_repetitions, messages_per_task, collection_name,
-             db_name=DB_NAME, channel_class=VerificationChannel, workers=None):
+             additional_code_params=None, db_name=DB_NAME,
+             channel_class=VerificationChannel, workers=None):
     """"""
     list_of_task_parameters = generate_simulation_parameters(
         code_cls=code_class,
@@ -34,7 +35,8 @@ def executor(code_class, codeword_length, code_rates, snr_range,
         N=codeword_length,
         code_rates=code_rates,
         snr_range=snr_range,
-        repetitions=task_repetitions
+        repetitions=task_repetitions,
+        additional_code_params=additional_code_params,
     )
     task = partial(
         simulation_task,
