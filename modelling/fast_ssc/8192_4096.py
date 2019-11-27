@@ -1,13 +1,15 @@
 from modelling.fast_ssc.base import fast_ssc_executor
 
-# (4096, 3072) code built with Bhattacharya parameters method
-CODE_RATES = [0.75, ]
-# From 2 to 5 with step 0.25 dB
-SNR_RANGE = [i/4 for i in range(8, 21)]
+CODE_RATES = [0.5, ]
+# From 1.5 to 3 with step 0.25 dB
+SNR_RANGE = [i/4 for i in range(6, 13)]
 MESSAGES_PER_EXPERIMENT = 100
 REPETITIONS = 1000
-CODE_LENGTH = 4096
-MAX_WORKERS = 4
+CODE_LENGTH = 8192
+MAX_WORKERS = 7
+ITERATIONS = [
+    {'design_snr': 1.4, },
+]
 
 
 if __name__ == '__main__':
@@ -17,4 +19,5 @@ if __name__ == '__main__':
         snr_range=SNR_RANGE,
         task_repetitions=REPETITIONS,
         messages_per_task=MESSAGES_PER_EXPERIMENT,
+        additional_code_params=ITERATIONS,
     )
