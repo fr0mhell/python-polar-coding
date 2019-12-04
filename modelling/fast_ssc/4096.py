@@ -1,11 +1,20 @@
-from modelling.base import run_model
-from modelling.fast_ssc.params import fast_ssc_experiment, get_pairs
+from modelling.fast_ssc.base import fast_ssc_executor
 
+# (4096, 3072) code built with Bhattacharya parameters method
+CODE_RATES = [0.75, ]
+# From 2 to 5 with step 0.25 dB
+SNR_RANGE = [i/4 for i in range(8, 21)]
+MESSAGES_PER_EXPERIMENT = 100
+REPETITIONS = 1000
 CODE_LENGTH = 4096
-MAX_WORKERS = 8
-
-code_channel_pairs = get_pairs(N=CODE_LENGTH)
+MAX_WORKERS = 4
 
 
 if __name__ == '__main__':
-    run_model(MAX_WORKERS, fast_ssc_experiment, code_channel_pairs)
+    fast_ssc_executor(
+        codeword_length=CODE_LENGTH,
+        code_rates=CODE_RATES,
+        snr_range=SNR_RANGE,
+        task_repetitions=REPETITIONS,
+        messages_per_task=MESSAGES_PER_EXPERIMENT,
+    )

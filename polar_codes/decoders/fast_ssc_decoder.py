@@ -19,8 +19,6 @@ class FastSSCNode(Node):
     REPETITION = 'REPETITION'
     OTHER = 'OTHER'
 
-    SIMPLIFIED_NODE_TYPES = (ZERO_NODE, ONE_NODE, SINGLE_PARITY_CHECK, REPETITION)  # noqa
-
     # Minimal size of Single parity check node
     SPC_MIN_SIZE = 4
     # Minimal size of Repetition Fast SSC Node
@@ -75,7 +73,7 @@ class FastSSCNode(Node):
 
     @property
     def is_simplified_node(self):
-        return self._node_type in self.__class__.SIMPLIFIED_NODE_TYPES
+        return self._node_type != self.__class__.OTHER
 
     def compute_leaf_beta(self):
         if not self.is_leaf:

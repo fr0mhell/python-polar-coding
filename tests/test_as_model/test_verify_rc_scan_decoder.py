@@ -82,6 +82,16 @@ class TestSystematicCode_1024_256_iter_4(VerifyRCSCANCode):
     }
 
 
+class TestSystematicCode_1024_512_iter_2_crc(VerifyRCSCANCode):
+    code_parameters = {
+        'codeword_length': 1024,
+        'info_length': 512,
+        'is_systematic': True,
+        'iterations': 2,
+        'is_crc_aided': True,
+    }
+
+
 class TestSystematicCode_1024_512_iter_4(VerifyRCSCANCode):
     code_parameters = {
         'codeword_length': 1024,
@@ -109,6 +119,36 @@ class TestSystematicCode_2048_512_iter_1(VerifyRCSCANCode):
         'info_length': 512,
         'is_systematic': True,
         'iterations': 1,
+    }
+
+
+class TestSystematicCode_1024_512_iter_4_crc(VerifyRCSCANCode):
+    code_parameters = {
+        'codeword_length': 1024,
+        'info_length': 512,
+        'is_systematic': True,
+        'iterations': 4,
+        'is_crc_aided': True,
+    }
+
+
+class TestSystematicCode_1024_256_iter_4_crc(VerifyRCSCANCode):
+    code_parameters = {
+        'codeword_length': 1024,
+        'info_length': 256,
+        'is_systematic': True,
+        'iterations': 4,
+        'is_crc_aided': True,
+    }
+
+
+class TestSystematicCode_1024_768_iter_4_crc(VerifyRCSCANCode):
+    code_parameters = {
+        'codeword_length': 1024,
+        'info_length': 768,
+        'is_systematic': True,
+        'iterations': 4,
+        'is_crc_aided': True,
     }
 
 
@@ -163,6 +203,16 @@ class TestSystematicCode_2048_512_iter_4(VerifyRCSCANCode):
         'info_length': 512,
         'is_systematic': True,
         'iterations': 4,
+    }
+
+
+class TestSystematicCode_2048_1024_iter_2_crc(VerifyRCSCANCode):
+    code_parameters = {
+        'codeword_length': 2048,
+        'info_length': 1024,
+        'is_systematic': True,
+        'iterations': 2,
+        'is_crc_aided': True,
     }
 
 
