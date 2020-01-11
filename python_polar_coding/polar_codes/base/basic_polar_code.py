@@ -6,7 +6,7 @@ import numpy as np
 from ..utils import (calculate_crc_16, check_crc_16, int_to_bin_list,
                      reverse_bits)
 from .functions import compute_encoding_step
-from .polar_code_construction import bhattacharyya_bounds
+from .pcc import bhattacharyya_bounds
 
 
 class BasicPolarCode:
