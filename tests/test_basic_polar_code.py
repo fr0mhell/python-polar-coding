@@ -14,21 +14,21 @@ class TestBasicPolarCode(TestCase):
         cls.info_length = 32
         cls.design_snr = 0.0
         cls.non_systematic_code = BasicPolarCode(
-            codeword_length=cls.codeword_length,
-            info_length=cls.info_length,
+            N=cls.codeword_length,
+            K=cls.info_length,
             is_systematic=False,
             design_snr=cls.design_snr,
         )
 
         cls.systematic_code = BasicPolarCode(
-            codeword_length=cls.codeword_length,
-            info_length=cls.info_length,
+            N=cls.codeword_length,
+            K=cls.info_length,
             design_snr=cls.design_snr,
         )
 
         cls.systematic_crc_code = BasicPolarCode(
-            codeword_length=cls.codeword_length,
-            info_length=cls.info_length,
+            N=cls.codeword_length,
+            K=cls.info_length,
             design_snr=cls.design_snr,
             is_crc_aided=True,
         )
@@ -71,9 +71,9 @@ class TestBasicPolarCode(TestCase):
 
     def test_building_polar_mask(self):
         """Test `build_polar_code_mask` method."""
-        mask1 = self.non_systematic_code._compute_polar_mask()
-        mask2 = self.systematic_code._compute_polar_mask()
-        mask3 = self.systematic_crc_code._compute_polar_mask()
+        mask1 = self.non_systematic_code.polar_code_construction()
+        mask2 = self.systematic_code.polar_code_construction()
+        mask3 = self.systematic_crc_code.polar_code_construction()
 
         self.assertEqual(np.sum(mask1), self.info_length)
         self.assertTrue(all(mask1 == self.mask))

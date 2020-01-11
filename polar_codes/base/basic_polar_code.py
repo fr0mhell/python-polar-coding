@@ -1,8 +1,7 @@
 from operator import itemgetter
 
-import numba
 import numpy as np
-
+from typing import Any
 from ..utils import (calculate_crc_16, check_crc_16, int_to_bin_list,
                      reverse_bits)
 from .functions import compute_encoding_step
@@ -10,56 +9,59 @@ from .polar_code_construction import bhattacharyya_bounds
 
 
 class BasicPolarCode:
-    """Base Polar code with CRC 16 support.
+    """Base Polar code with CRC support.
 
     Include code construction, encoding and CRC 16 support.
 
-    Args:
-        codeword_length (int): Length of codeword (N).
-        info_length (int): Length of information part of codeword (K).
-        design_snr (float): Value of design Signal-to-Noise ratio for
-            polar code construction in dB.
-        is_systematic (bool): If systematic encoding used or not.
-        is_crc_aided (bool): If CRC used or not.
-        dumped_mask (str): Pre-defined Polar mask passed as a string of 0`s and
-            1`s.
-
     """
+    CRC_SIZE = 16
 
-    def __init__(self, codeword_length, info_length, design_snr=0.0,
-                 is_systematic=True, is_crc_aided=False, dumped_mask=None):
+    CUSTOM = 'custom'
+    BHATTACHARYYA = 'bhattacharyya'
+    GAUSSIAN = 'gaussian'
+    MONTE_CARLO = 'monte_carlo'
 
-        assert info_length < codeword_length, (
-            f'Cannot create Polar code with N = {codeword_length}, '
-            f'K = {info_length}. N must be bigger than K.'
-        )
+    pcc_methods = {
+        BHATTACHARYYA: bhattacharyya_bounds,
+    }
 
-        self.codeword_length = codeword_length
-        self.info_length = info_length
+    def __init__(self, N: int, K: int,
+                 design_snr: float = 0.0,
+                 is_systematic: bool = True,
+                 is_crc_aided: bool = False,
+                 mask: Any[str, None] = None,
+                 pcc_method: str = BHATTACHARYYA):
+
+        assert K < N, (f'Cannot create Polar code with N = {N}, K = {K}.'
+                       f'\nN must be bigger than K.')
+
+        self._N = N
+        self._K = K
+        self._n = self._calculate_polar_steps(N)
         self.design_snr = design_snr
         self.is_systematic = is_systematic
         self.is_crc_aided = is_crc_aided
-        self.dumped_mask = dumped_mask
 
-        self.polar_steps = self._calculate_polar_steps(codeword_length)
-        self.polar_mask = self._compute_polar_mask()
+        self.pcc_method = pcc_method
+        self.channel_estimates = self.compute_channels_estimates(self.pcc_method)
+        self.polar_mask = self.polar_code_construction(mask)
 
         self.decoder = None
 
     @property
     def N(self):
         """Get codeword length using the common name `N`."""
-        return self.codeword_length
+        return self._N
 
     @property
     def K(self):
         """Get information word length using the common name `K`."""
-        return self.info_length
+        return self._K
 
     @property
     def n(self):
         """Get the number of polar steps using the common name `n`."""
-        return self.polar_steps
+        return self._n
 
     def __str__(self):
         return (
@@ -76,8 +78,9 @@ class BasicPolarCode:
         """Get code parameters as a dict."""
         return {
             'type': self.__class__.__name__,
-            'codeword_length': self.codeword_length,
-            'info_length': self.info_length,
+            'codeword_length': self.N,
+            'info_length': self.K,
+            'pcc_method': self.pcc_method,
             'design_snr': self.design_snr,
             'is_systematic': self.is_systematic,
             'is_crc_aided': self.is_crc_aided,
@@ -119,29 +122,33 @@ class BasicPolarCode:
         raise NotImplementedError()
 
     @staticmethod
-    @numba.njit
     def _calculate_polar_steps(codeword_length):
         """Calculate number of polar steps `n`."""
         return int(np.log2(codeword_length))
 
-    def _compute_polar_mask(self, reverse=True):
-        """Compute polar mask."""
-        if self.dumped_mask:
-            return self._restore_dumped_mask()
+    def compute_channels_estimates(self, pcc_method):
+        """"""
+        if pcc_method == self.CUSTOM:
+            return None
 
-        self.channel_estimates = bhattacharyya_bounds(self.N, self.design_snr)
-        if reverse:
-            self.channel_estimates = np.array([
-                self.channel_estimates[reverse_bits(i, self.n)] for i in range(self.N)
-            ])
-        info_length = self.K + 16 if self.is_crc_aided else self.K
-        return self._build_polar_mask(info_length)
+        pcc_method = self.pcc_methods[pcc_method]
+        channel_estimates = pcc_method(self.N, self.design_snr)
 
-    def _restore_dumped_mask(self):
-        """Restore polar mask from dump."""
-        return np.array([int(b) for b in self.dumped_mask])
+        # bit-reversal approach https://arxiv.org/abs/1307.7154 (Section III-D)
+        for i in range(self.N):
+            channel_estimates[i] = channel_estimates[reverse_bits(i, self.n)]
 
-    def _build_polar_mask(self, info_length):
+        return channel_estimates
+
+    def polar_code_construction(self, mask=None):
+        """Construct polar mask."""
+        if mask:
+            return np.array([int(b) for b in mask])
+
+        info_length = self.K + self.CRC_SIZE if self.is_crc_aided else self.K
+        return self._construct_polar_mask(info_length)
+
+    def _construct_polar_mask(self, info_length):
         """Build polar code Mask based on channel estimates.
 
         0 means frozen bit, 1 means information position.

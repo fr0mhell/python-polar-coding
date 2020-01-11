@@ -3,7 +3,7 @@ from concurrent import futures
 from datetime import datetime
 from functools import partial
 
-from modelling.channels import VerificationChannel
+from modelling.channels import Verification_BPSK_AWGN_Channel
 from modelling.functions import generate_simulation_parameters, simulation_task
 from modelling.mongo import DB_NAME
 
@@ -27,7 +27,7 @@ def run_model(workers, task, list_of_parameters):
 def executor(code_class, codeword_length, code_rates, snr_range,
              task_repetitions, messages_per_task, collection_name,
              additional_code_params=None, db_name=DB_NAME,
-             channel_class=VerificationChannel, workers=None):
+             channel_class=Verification_BPSK_AWGN_Channel, workers=None):
     """"""
     list_of_task_parameters = generate_simulation_parameters(
         code_cls=code_class,

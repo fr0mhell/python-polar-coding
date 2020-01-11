@@ -24,7 +24,7 @@ class FastSSCNode(Node):
     # Minimal size of Repetition Fast SSC Node
     REPETITION_MIN_SIZE = 2
 
-    def __init__(self, mask, name=ROOT, **kwargs):
+    def __init__(self, mask, name=ROOT, code_min_size=None, **kwargs):
         """A node of Fast SSC decoder."""
         if name not in self.__class__.NODE_NAMES:
             raise ValueError('Wrong Fast SSC Node type')
@@ -32,6 +32,7 @@ class FastSSCNode(Node):
         super().__init__(name, **kwargs)
 
         self._mask = mask
+        self._code_min_size = code_min_size
         self._node_type = self._get_node_type()
         self._alpha = np.zeros(self.N, dtype=np.double)
         self._beta = np.zeros(self.N, dtype=np.int8)
@@ -42,6 +43,11 @@ class FastSSCNode(Node):
     @property
     def N(self):
         return self._mask.size
+
+    @property
+    def M(self):
+        """Minimal size of component polar code."""
+        return self._code_min_size
 
     @property
     def alpha(self):
@@ -74,6 +80,28 @@ class FastSSCNode(Node):
     @property
     def is_simplified_node(self):
         return self._node_type != self.__class__.OTHER
+
+    @property
+    def zero_min_size(self):
+        return 1 if self.M is None else self.M
+
+    @property
+    def one_min_size(self):
+        return self.zero_min_size
+
+    @property
+    def repetition_min_size(self):
+        return self.__class__.REPETITION_MIN_SIZE if self.M is None else self.M
+
+    @property
+    def spc_min_size(self):
+        return self.__class__.SPC_MIN_SIZE if self.M is None else self.M
+
+    def to_dict(self):
+        return {
+            'type': self._node_type,
+            'mask': self._mask,
+        }
 
     def compute_leaf_beta(self):
         if not self.is_leaf:
@@ -120,14 +148,14 @@ class FastSSCNode(Node):
         Or other type.
 
         """
-        if np.all(self._mask == 0):
+        if np.all(self._mask == 0) and self._mask.size >= self.zero_min_size:
             return FastSSCNode.ZERO_NODE
-        if np.all(self._mask == 1):
+        if np.all(self._mask == 1) and self._mask.size >= self.one_min_size:
             return FastSSCNode.ONE_NODE
-        if (self._mask.size >= FastSSCNode.SPC_MIN_SIZE
+        if (self._mask.size >= self.spc_min_size
                 and self._mask[0] == 0 and np.sum(self._mask) == self.N - 1):
             return FastSSCNode.SINGLE_PARITY_CHECK
-        if (self._mask.size >= FastSSCNode.REPETITION_MIN_SIZE
+        if (self._mask.size >= self.repetition_min_size
                 and self._mask[-1] == 1 and np.sum(self._mask) == 1):
             return FastSSCNode.REPETITION
         return FastSSCNode.OTHER
@@ -137,18 +165,26 @@ class FastSSCNode(Node):
         if self.is_simplified_node:
             return
 
+        if self._mask.size == self.M:
+            return
+
         left_mask, right_mask = np.split(self._mask, 2)
-        self.__class__(mask=left_mask, name=self.LEFT, parent=self)
-        self.__class__(mask=right_mask, name=self.RIGHT, parent=self)
+        self.__class__(mask=left_mask, name=self.LEFT, code_min_size=self.M,
+                       parent=self)
+        self.__class__(mask=right_mask, name=self.RIGHT, code_min_size=self.M,
+                       parent=self)
 
 
 class FastSSCDecoder(SCDecoder):
     """Implements Fast SSC decoding algorithm."""
     node_class = FastSSCNode
 
-    def __init__(self, mask, is_systematic=True):
+    def __init__(self, mask, is_systematic=True, code_min_size=None):
         super().__init__(mask, is_systematic=is_systematic)
-        self._decoding_tree = self.node_class(mask=self.mask)
+        self._decoding_tree = self.node_class(
+            mask=self.mask,
+            code_min_size=code_min_size,
+        )
         self._position = 0
 
     def set_initial_state(self, received_llr):
@@ -181,6 +217,10 @@ class FastSSCDecoder(SCDecoder):
     def result(self):
         if self.is_systematic:
             return self.root.beta
+
+    @property
+    def M(self):
+        return self._decoding_tree.M
 
     def compute_intermediate_alpha(self, leaf):
         """Compute intermediate Alpha values (LLR)."""

@@ -2,7 +2,7 @@ import numba
 import numpy as np
 
 
-class SimpleBPSKModAWGNChannel:
+class Simple_BPSK_AWGN_Channel:
     """Simple model of BPSK-modulation + AWGN channel.
 
     Args:
@@ -55,7 +55,7 @@ class SimpleBPSKModAWGNChannel:
         return -(4 * np.sqrt(symbol_energy) / noise_power) * signal
 
 
-class VerificationChannel(SimpleBPSKModAWGNChannel):
+class Verification_BPSK_AWGN_Channel(Simple_BPSK_AWGN_Channel):
     """Custom model of AWGN channel.
 
     Implemented for the comparison with the SC decoder proposed by H. Vangala,
@@ -67,6 +67,9 @@ class VerificationChannel(SimpleBPSKModAWGNChannel):
         self.snr_db = snr_db
         self.noise_power = noise_power
         self.symbol_energy = self._compute_symbol_energy(snr_db, K, N)
+
+    def __str__(self):
+        return 'Verification-BPSK-AWGN-Channel'
 
     def _compute_symbol_energy(self, snr_db, K, N):
         snr = np.power(10, snr_db / 10)
