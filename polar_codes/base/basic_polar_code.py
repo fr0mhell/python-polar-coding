@@ -1,7 +1,8 @@
 from operator import itemgetter
+from typing import Any
 
 import numpy as np
-from typing import Any
+
 from ..utils import (calculate_crc_16, check_crc_16, int_to_bin_list,
                      reverse_bits)
 from .functions import compute_encoding_step
