@@ -5,9 +5,7 @@ from .crc import CRC
 
 
 class Encoder:
-    """Polar Codes encoder.
-
-    """
+    """Polar Codes encoder."""
 
     def __init__(self,
                  mask: np.array,
@@ -20,7 +18,11 @@ class Encoder:
         self.is_systematic = is_systematic
 
     def encode(self, message: np.array) -> np.array:
-        """"""
+        """Encode message with a polar code.
+
+        Support both non-systematic and systematic encoding.
+
+        """
         precoded = self._precode(message)
         encoded = self._non_systematic_encode(precoded)
 

@@ -1,1 +1,1 @@
-from .basic_polar_code import BasicPolarCode
+from .to_del_basic_polar_code import BasicPolarCode
