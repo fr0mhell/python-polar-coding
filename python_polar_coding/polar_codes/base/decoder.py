@@ -6,21 +6,18 @@ import numpy as np
 class BaseDecoder(metaclass=abc.ABCMeta):
     """Basic class for polar decoder."""
 
-    def __init__(self,
-                 n,
-                 mask: np.array,
-                 is_systematic: bool = True):
+    def __init__(self, n, mask: np.array, is_systematic: bool = True):
         self.N = mask.shape[0]
         self.n = n
         self.is_systematic = is_systematic
         self.mask = mask
 
     def decode(self, received_llr: np.array) -> np.array:
-        decoded = self._decode(received_llr)
+        decoded = self.decode_internal(received_llr)
         return self.get_result(decoded)
 
     @abc.abstractmethod
-    def _decode(self, received_llr: np.array) -> np.array:
+    def decode_internal(self, received_llr: np.array) -> np.array:
         """Implementation of particular decoding method."""
 
     def get_result(self, decoded: np.array) -> np.array:

@@ -1,14 +1,8 @@
-"""
-left = 0.0506
-right = -0.0552
-bit = 0
-right - (2 * bit - 1) * left
-"""
 from unittest import TestCase
 
 import numpy as np
 
-from polar_codes.decoders import SCDecoder
+from python_polar_coding.polar_codes.decoders import SCDecoder
 
 
 class TestSCDecoder(TestCase):
@@ -20,7 +14,7 @@ class TestSCDecoder(TestCase):
         ])
         cls.mask = np.array([0, 1, 0, 1, 0, 1, 1, 1, ], dtype=np.int8)
         cls.steps = cls.mask.size
-        cls.decoder = SCDecoder(cls.mask, is_systematic=False)
+        cls.decoder = SCDecoder(mask=cls.mask, is_systematic=False, n=3)
 
         cls.expected_llrs = [
             [
@@ -126,11 +120,11 @@ class TestSCDecoder(TestCase):
 
     def _decoding_step(self, position):
         """Single step of decoding process."""
-        self.decoder.set_decoder_state(position)
+        self.decoder._set_decoder_state(position)
 
         # Check intermediate LLRs computation
         expected_llr = self.expected_llrs[position]
-        self.decoder.compute_intermediate_alpha(position)
+        self.decoder._compute_intermediate_alpha(position)
         for i in range(self.decoder.n + 1):
             np.testing.assert_array_almost_equal(
                 self.decoder.intermediate_llr[i],
@@ -138,12 +132,12 @@ class TestSCDecoder(TestCase):
             )
 
         # Check decoding result
-        self.decoder.compute_beta(position)
+        self.decoder._compute_beta(position)
         decoded = self.decoder._current_decision
         self.assertEqual(decoded, self.expected_decoded[position])
 
         # Check intermediate bits computation
-        self.decoder.compute_intermediate_beta(position)
+        self.decoder._compute_intermediate_beta(position)
         expected_bits = self.expected_bits[position]
         for i in range(self.decoder.n + 1):
             np.testing.assert_array_almost_equal(
@@ -151,10 +145,10 @@ class TestSCDecoder(TestCase):
                 expected_bits[i]
             )
 
-        self.decoder.update_decoder_state()
+        self.decoder._update_decoder_state()
 
     def test_decoding_steps(self):
         """Test SC decoding process step-by-step."""
-        self.decoder.set_initial_state(self.received_llr)
+        self.decoder._set_initial_state(self.received_llr)
         for i in range(self.steps):
             self._decoding_step(i)

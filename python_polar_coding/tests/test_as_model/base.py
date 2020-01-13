@@ -24,11 +24,11 @@ class BasePolarCodeTestMixin:
 
     @property
     def N(self):
-        return self.code_parameters['codeword_length']
+        return self.code_parameters['N']
 
     @property
     def K(self):
-        return self.code_parameters['info_length']
+        return self.code_parameters['K']
 
     def _get_channel(self, snr_db):
         return self.channel_class(snr_db)
@@ -46,14 +46,6 @@ class BasePolarCodeTestMixin:
             fails = np.sum(message != decoded)
             bit_errors += fails
             frame_errors += fails > 0
-
-            # if not with_noise and fails:
-            #     print('iteration:', m)
-            #     print('message:', message)
-            #     print('encoded:', encoded)
-            #     print('transmitted:', llr)
-            #     print('decoded:', decoded)
-            #     print()
 
         return [
             bit_errors / (self.messages * self.K),

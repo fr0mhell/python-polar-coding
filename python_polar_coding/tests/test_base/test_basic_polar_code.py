@@ -10,7 +10,7 @@ from ...polar_codes.base.polar_code import (BasicPolarCode,
 
 class SimpleDecoder(BaseDecoder):
     """Simple decoder for testing."""
-    def _decode(self, received_llr: np.array):
+    def decode_internal(self, received_llr: np.array):
         return make_hard_decision(received_llr)
 
 

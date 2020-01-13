@@ -3,8 +3,8 @@ from typing import Union
 
 import numpy as np
 
-from ..utils import (calculate_crc_16, check_crc_16, int_to_bin_list,
-                     reverse_bits)
+from ..to_del_utils import (calculate_crc_16, check_crc_16, int_to_bin_list,
+                            reverse_bits)
 from .functions import compute_encoding_step
 from .pcc import bhattacharyya_bounds
 
