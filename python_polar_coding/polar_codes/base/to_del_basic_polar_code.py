@@ -1,5 +1,5 @@
 from operator import itemgetter
-from typing import Any
+from typing import Union
 
 import numpy as np
 
@@ -30,7 +30,7 @@ class BasicPolarCode:
                  design_snr: float = 0.0,
                  is_systematic: bool = True,
                  is_crc_aided: bool = False,
-                 mask: Any[str, None] = None,
+                 mask: Union[str, None] = None,
                  pcc_method: str = BHATTACHARYYA):
 
         assert K < N, (f'Cannot create Polar code with N = {N}, K = {K}.'

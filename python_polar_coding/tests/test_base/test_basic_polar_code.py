@@ -2,7 +2,36 @@ from unittest import TestCase
 
 import numpy as np
 
-from polar_codes.base import BasicPolarCode
+from ...polar_codes.base.decoder import BaseDecoder
+from ...polar_codes.base.functions import make_hard_decision
+from ...polar_codes.base.polar_code import (BasicPolarCode,
+                                            BasicPolarCodeWithCRC)
+
+
+class SimpleDecoder(BaseDecoder):
+    """Simple decoder for testing."""
+    def _decode(self, received_llr: np.array):
+        return make_hard_decision(received_llr)
+
+
+class SimplePC(BasicPolarCode):
+    """Simple polar code for testing."""
+    decoder_class = SimpleDecoder
+
+    def get_decoder(self):
+        return self.decoder_class(
+            n=self.n, mask=self.mask, is_systematic=self.is_systematic
+        )
+
+
+class SimplePCCRC(BasicPolarCodeWithCRC):
+    """Simple polar code with CRC support for testing."""
+    decoder_class = SimpleDecoder
+
+    def get_decoder(self):
+        return self.decoder_class(
+            n=self.n, mask=self.mask, is_systematic=self.is_systematic
+        )
 
 
 class TestBasicPolarCode(TestCase):
@@ -13,24 +42,24 @@ class TestBasicPolarCode(TestCase):
         cls.codeword_length = 64
         cls.info_length = 32
         cls.design_snr = 0.0
-        cls.non_systematic_code = BasicPolarCode(
+        cls.non_systematic_code = SimplePC(
             N=cls.codeword_length,
             K=cls.info_length,
             is_systematic=False,
             design_snr=cls.design_snr,
         )
 
-        cls.systematic_code = BasicPolarCode(
+        cls.systematic_code = SimplePC(
             N=cls.codeword_length,
             K=cls.info_length,
             design_snr=cls.design_snr,
         )
 
-        cls.systematic_crc_code = BasicPolarCode(
+        cls.systematic_crc_code = SimplePCCRC(
             N=cls.codeword_length,
             K=cls.info_length,
             design_snr=cls.design_snr,
-            is_crc_aided=True,
+            crc_size=16,
         )
 
         # Raw test data
@@ -78,9 +107,9 @@ class TestBasicPolarCode(TestCase):
 
     def test_building_polar_mask(self):
         """Test `build_polar_code_mask` method."""
-        mask1 = self.non_systematic_code.polar_code_construction()
-        mask2 = self.systematic_code.polar_code_construction()
-        mask3 = self.systematic_crc_code.polar_code_construction()
+        mask1 = self.non_systematic_code._polar_code_construction()
+        mask2 = self.systematic_code._polar_code_construction()
+        mask3 = self.systematic_crc_code._polar_code_construction()
 
         self.assertEqual(np.sum(mask1), self.info_length)
         self.assertTrue(all(mask1 == self.mask))
@@ -94,10 +123,10 @@ class TestBasicPolarCode(TestCase):
 
     def test_precode_and_extract(self):
         """Test `_precode` and `_extract` methods"""
-        precoded = self.systematic_code._precode(self.message)
+        precoded = self.systematic_code.encoder._precode(self.message)
         self.assertEqual(precoded.size, self.codeword_length)
 
-        extracted = self.systematic_code._extract(precoded)
+        extracted = self.systematic_code.decoder.get_result(precoded)
         self.assertEqual(extracted.size, self.info_length)
 
         self.assertTrue(all(extracted == self.message))
@@ -112,7 +141,7 @@ class TestBasicPolarCode(TestCase):
         encoded = self.systematic_code.encode(self.message)
         self.assertTrue(all(encoded == self.sys_enc_msg))
 
-        extracted = self.systematic_code._extract(encoded)
+        extracted = self.systematic_code.decoder.get_result(encoded)
         self.assertTrue(all(extracted == self.message))
 
     def test_systematic_encode_with_crc(self):
@@ -120,5 +149,5 @@ class TestBasicPolarCode(TestCase):
         encoded = self.systematic_crc_code.encode(self.message)
         self.assertTrue(all(encoded == self.sys_crc_enc_msg))
 
-        extracted = self.systematic_crc_code._extract(encoded)
+        extracted = self.systematic_crc_code.decoder.get_result(encoded)
         self.assertTrue(all(extracted[:self.info_length] == self.message))

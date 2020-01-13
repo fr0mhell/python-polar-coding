@@ -1,5 +1,5 @@
 from operator import itemgetter
-from typing import Any
+from typing import Union
 
 import numpy as np
 
@@ -30,7 +30,7 @@ class BasicPolarCode:
                  design_snr: float = 0.0,
                  is_systematic: bool = True,
                  is_crc_aided: bool = False,
-                 mask: Any[str, None] = None,
+                 mask: Union[str, None] = None,
                  pcc_method: str = BHATTACHARYYA):
 
         assert K < N, (f'Cannot create Polar code with N = {N}, K = {K}.'
@@ -136,10 +136,9 @@ class BasicPolarCode:
         channel_estimates = pcc_method(self.N, self.design_snr)
 
         # bit-reversal approach https://arxiv.org/abs/1307.7154 (Section III-D)
-        for i in range(self.N):
-            channel_estimates[i] = channel_estimates[reverse_bits(i, self.n)]
-
-        return channel_estimates
+        return np.array([
+            channel_estimates[reverse_bits(i, self.n)] for i in range(self.N)
+        ])
 
     def polar_code_construction(self, mask=None):
         """Construct polar mask."""

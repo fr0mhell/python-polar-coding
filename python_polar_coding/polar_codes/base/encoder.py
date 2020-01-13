@@ -24,11 +24,11 @@ class Encoder:
 
         """
         precoded = self._precode(message)
-        encoded = self._non_systematic_encode(precoded)
+        encoded = self._non_systematic_encode(precoded, self.n)
 
         if self.is_systematic:
             encoded *= self.mask
-            encoded = self._non_systematic_encode(encoded)
+            encoded = self._non_systematic_encode(encoded, self.n)
 
         return encoded
 

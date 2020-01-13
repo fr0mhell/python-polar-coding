@@ -1,5 +1,6 @@
+import abc
 from operator import itemgetter
-from typing import Any
+from typing import Union
 
 import numpy as np
 
@@ -7,7 +8,7 @@ from . import encoder, pcc, utils
 from .crc import CRC
 
 
-class BasicPolarCode:
+class BasicPolarCode(metaclass=abc.ABCMeta):
     """Basic Polar code class.
 
     Includes code construction.
@@ -32,7 +33,7 @@ class BasicPolarCode:
     def __init__(self, N: int, K: int,
                  design_snr: float = 0.0,
                  is_systematic: bool = True,
-                 custom_mask: Any[str, None] = None,
+                 custom_mask: Union[str, None] = None,
                  pcc_method: str = BHATTACHARYYA):
 
         assert K < N, (f'Cannot create Polar code with N = {N}, K = {K}.'
@@ -57,9 +58,9 @@ class BasicPolarCode:
         return self.encoder_class(mask=self.mask, n=self.n,
                                   is_systematic=self.is_systematic)
 
+    @abc.abstractmethod
     def get_decoder(self):
         """Get Polar Decoder instance."""
-        raise NotImplementedError()
 
     def encode(self, message: np.array) -> np.array:
         """Encode binary message."""
@@ -79,7 +80,9 @@ class BasicPolarCode:
         channel_estimates = pcc_method(N, design_snr)
 
         # bit-reversal approach https://arxiv.org/abs/1307.7154 (Section III-D)
-        return [channel_estimates[utils.reverse_bits(i, n)] for i in range(N)]
+        return np.array([
+            channel_estimates[utils.reverse_bits(i, n)] for i in range(N)
+        ])
 
     def _polar_code_construction(self, custom_mask=None) -> np.array:
         """Construct polar mask.
@@ -127,7 +130,7 @@ class BasicPolarCodeWithCRC(BasicPolarCode):
                  design_snr: float = 0.0,
                  is_systematic: bool = True,
                  crc_size: int = 32,
-                 custom_mask: Any[str, None] = None,
+                 custom_mask: Union[str, None] = None,
                  pcc_method: str = BasicPolarCode.BHATTACHARYYA):
 
         assert crc_size in [16, 32], f'Unsupported CRC size ({crc_size})'
