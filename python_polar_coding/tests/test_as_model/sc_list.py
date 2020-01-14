@@ -1,4 +1,4 @@
-from polar_codes import SCListPolarCode
+from python_polar_coding.polar_codes import SCListPolarCode
 
 from .base import VerificationChannelTestCase
 
@@ -9,16 +9,13 @@ class VerifySystematicSCListCode(VerificationChannelTestCase):
 
     @classmethod
     def _get_filename(cls):
-        N = cls.code_parameters['codeword_length']
-        K = cls.code_parameters['info_length']
-        L = cls.code_parameters['list_size']
+        N = cls.code_parameters['N']
+        K = cls.code_parameters['K']
+        L = cls.code_parameters['L']
         filename = f'{N}_{K}_L_{L}'
-        if cls.code_parameters.get('is_crc_aided'):
+        if cls.code_parameters.get('crc_size'):
             filename += '_crc'
         return f'{filename}.json'
-
-    def test_sc_decoder_without_noise(self):
-        pass
 
     def test_snr_1_0_db(self):
         snd_db = 1.0

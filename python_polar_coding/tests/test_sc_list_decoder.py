@@ -408,11 +408,6 @@ class TestSCListDecoder(TestCase):
 
     def _decoding_step(self, position):
         """Single step of decoding process."""
-        print(position)
-
-        if position == 4:
-            a = 2
-
         self.decoder(position)
         for i, path in enumerate(self.decoder.paths):
 

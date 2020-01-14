@@ -33,7 +33,7 @@ class BasicPolarCode(metaclass=abc.ABCMeta):
     def __init__(self, N: int, K: int,
                  design_snr: float = 0.0,
                  is_systematic: bool = True,
-                 custom_mask: Union[str, None] = None,
+                 mask: Union[str, None] = None,
                  pcc_method: str = BHATTACHARYYA):
 
         assert K < N, (f'Cannot create Polar code with N = {N}, K = {K}.'
@@ -48,10 +48,27 @@ class BasicPolarCode(metaclass=abc.ABCMeta):
         self.pcc_method = pcc_method
         self.channel_estimates = self._compute_channels_estimates(
             N=self.N, n=self.n, design_snr=design_snr, pcc_method=pcc_method)
-        self.mask = self._polar_code_construction(custom_mask)
+        self.mask = self._polar_code_construction(mask)
 
         self.encoder = self.get_encoder()
         self.decoder = self.get_decoder()
+
+    def __str__(self):
+        return (f'({self.N}, {self.K}) Polar code.\n'
+                f'Design SNR: {self.design_snr} dB\n'
+                f'Systematic: {str(self.is_systematic)}\n')
+
+    def to_dict(self):
+        """Get code parameters as a dict."""
+        return {
+            'type': self.__class__.__name__,
+            'N': self.N,
+            'K': self.K,
+            'is_systematic': self.is_systematic,
+            'design_snr': self.design_snr,
+            'pcc_method': self.pcc_method,
+            'mask': ''.join(str(m) for m in self.mask),
+        }
 
     def get_encoder(self):
         """Get Polar Encoder instance."""
@@ -130,7 +147,7 @@ class BasicPolarCodeWithCRC(BasicPolarCode):
                  design_snr: float = 0.0,
                  is_systematic: bool = True,
                  crc_size: int = 32,
-                 custom_mask: Union[str, None] = None,
+                 mask: Union[str, None] = None,
                  pcc_method: str = BasicPolarCode.BHATTACHARYYA):
 
         assert crc_size in [16, 32], f'Unsupported CRC size ({crc_size})'
@@ -142,8 +159,16 @@ class BasicPolarCodeWithCRC(BasicPolarCode):
         super().__init__(N=N, K=K,
                          is_systematic=is_systematic,
                          design_snr=design_snr,
-                         custom_mask=custom_mask,
+                         mask=mask,
                          pcc_method=pcc_method)
+
+    def __str__(self):
+        return f'{super().__str__()}\nCRC {self.crc_size}'
+
+    def to_dict(self):
+        d = super().to_dict()
+        d.update({'crc_size': self.crc_size})
+        return d
 
     def get_encoder(self):
         """Get Polar Encoder instance."""
@@ -153,7 +178,7 @@ class BasicPolarCodeWithCRC(BasicPolarCode):
 
     @property
     def crc_size(self):
-        return self.crc_codec.crc_size if self.crc_codec else 0
+        return self.crc_codec.crc_size
 
     def _polar_code_construction(self, custom_mask=None) -> np.array:
         """Construct polar mask.

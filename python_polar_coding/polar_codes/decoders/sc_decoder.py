@@ -17,7 +17,7 @@ class SCDecoder(BaseDecoder):
 
     """
 
-    def __init__(self, n, mask: np.array, is_systematic: bool = True):
+    def __init__(self, n: int, mask: np.array, is_systematic: bool = True):
         super().__init__(n=n, mask=mask, is_systematic=is_systematic)
 
         self._current_decision = 0
@@ -36,6 +36,10 @@ class SCDecoder(BaseDecoder):
         for pos in range(self.N):
             self._decode_position(pos)
 
+        return self.result
+
+    @property
+    def result(self):
         if self.is_systematic:
             return self.intermediate_bits[0]
         return self.intermediate_bits[-1]
@@ -62,7 +66,7 @@ class SCDecoder(BaseDecoder):
         return [np.zeros(self.N, dtype=np.int8) for _ in range(self.n + 1)]
 
     def _decode_position(self, position):
-        """"""
+        """Decode single position."""
         self._set_decoder_state(position)
         self._compute_intermediate_alpha(position)
         self._compute_beta(position)

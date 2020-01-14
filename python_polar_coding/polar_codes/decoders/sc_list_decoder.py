@@ -1,18 +1,17 @@
-from collections import UserList
 from copy import deepcopy
 
-import numba
 import numpy as np
 
-from ..base.functions import compute_encoding_step
+from ..base.crc import CRC
+from ..base.decoder import BaseDecoder
 from .sc_decoder import SCDecoder
 
 
 class ListDecoderPathMixin:
     """Mixin to extend a decoder class to use as a Path in list decoding."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
         # Probability that current path contains correct decoding result
         self._path_metric = 0
@@ -44,7 +43,8 @@ class ListDecoderPathMixin:
         return self.intermediate_llr[-1][0]
 
     def __deepcopy__(self, memodict={}):
-        new_path = self.__class__(self.mask, is_systematic=self.is_systematic)
+        new_path = self.__class__(n=self.n, mask=self.mask,
+                                  is_systematic=self.is_systematic)
 
         # Copy intermediate LLR values
         new_path.intermediate_llr = [
@@ -94,23 +94,17 @@ class SCPath(ListDecoderPathMixin, SCDecoder):
     """A path of a list decoder."""
 
 
-class SCListDecoder:
-    """Class implements SC List decoding.
+class SCListDecoder(BaseDecoder):
+    """SC List decoding."""
+    path_class = SCPath
 
-    Args:
-        mask (np.array): Polar code mask.
-        is_systematic (bool): Systematic code or not
-
-    """
-    def __init__(self, mask, is_systematic=True, list_size=1):
-        self.is_systematic = is_systematic
-        self.mask = mask
-        self.list_size = list_size
-        self.paths = [SCPath(mask, is_systematic), ]
-
-    @property
-    def L(self):
-        return self.list_size
+    def __init__(self, n: int, mask: np.array, is_systematic: bool = True,
+                 L: int = 1):
+        super().__init__(n=n, mask=mask, is_systematic=is_systematic)
+        self.L = L
+        self.paths = [
+            self.path_class(n=n, mask=mask, is_systematic=is_systematic),
+        ]
 
     @property
     def result(self):
@@ -120,17 +114,26 @@ class SCListDecoder:
     @property
     def best_result(self):
         """Result from the best path."""
-        return self.paths[0].result
+        return self.result[0]
 
-    def initialize(self, received_llr):
+    def decode_internal(self, received_llr: np.array) -> np.array:
+        """Implementation of SC decoding method."""
+        self._set_initial_state(received_llr)
+
+        for pos in range(self.N):
+            self._decode_position(pos)
+
+        return self.best_result
+
+    def _set_initial_state(self, received_llr):
         """Initialize paths with received message."""
         for path in self.paths:
-            path.set_initial_state(received_llr)
+            path._set_initial_state(received_llr)
 
-    def __call__(self, position, *args, **kwargs):
+    def _decode_position(self, position):
         """Single step of SC-decoding algorithm to decode one bit."""
         self.set_decoder_state(position)
-        self.compute_intermediate_llr(position)
+        self._compute_intermediate_alpha(position)
 
         if self.mask[position] == 1:
             self._populate_paths()
@@ -144,12 +147,12 @@ class SCListDecoder:
     def set_decoder_state(self, position):
         """Set current state of each path."""
         for path in self.paths:
-            path.set_decoder_state(position)
+            path._set_decoder_state(position)
 
-    def compute_intermediate_llr(self, position):
+    def _compute_intermediate_alpha(self, position):
         """Compute intermediate LLR values of each path."""
         for path in self.paths:
-            path.compute_intermediate_alpha(position)
+            path._compute_intermediate_alpha(position)
 
     def set_frozen_value(self):
         """Set current position to frozen values of each path."""
@@ -184,5 +187,26 @@ class SCListDecoder:
     def _compute_bits(self, position):
         """Compute bits of each path."""
         for path in self.paths:
-            path.compute_intermediate_beta(position)
-            path.update_decoder_state()
+            path._compute_intermediate_beta(position)
+            path._update_decoder_state()
+
+
+class SCListDecoderWithCRC(SCListDecoder):
+    """SC List decoding with CRC."""
+
+    def __init__(self,
+                 n: int,
+                 mask: np.array,
+                 crc_codec: CRC,
+                 is_systematic: bool = True,
+                 L: int = 1):
+        super().__init__(n=n, mask=mask, is_systematic=is_systematic, L=L)
+        self.crc_codec = crc_codec
+
+    @property
+    def best_result(self):
+        """Result from the best path."""
+        for result in self.result:
+            if self.crc_codec.check_crc(result):
+                return result[:-self.crc_codec.crc_size]
+        return super().best_result
