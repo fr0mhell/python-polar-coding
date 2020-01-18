@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from polar_codes.decoders import FastSSCDecoder
+from python_polar_coding.polar_codes.decoders import FastSSCDecoder
 
 
 class TestFastSSCDecoder(TestCase):
@@ -19,14 +19,14 @@ class TestFastSSCDecoder(TestCase):
             -2.1233,
         ])
         cls.length = cls.received_llr.size
+        cls.n = 3
 
     def test_zero_node_decoder(self):
         mask = np.zeros(self.length, dtype=np.int8)
-        decoder = FastSSCDecoder(mask=mask, is_systematic=True)
+        decoder = FastSSCDecoder(mask=mask, is_systematic=True, n=self.n)
         self.assertEqual(len(decoder._decoding_tree.leaves), 1)
 
-        decoder.set_initial_state(self.received_llr)
-        decoder()
+        decoder.decode(self.received_llr)
         np.testing.assert_equal(
             decoder.result,
             np.zeros(self.length, dtype=np.int8)
@@ -34,11 +34,10 @@ class TestFastSSCDecoder(TestCase):
 
     def test_one_node_decoder(self):
         mask = np.ones(self.length, dtype=np.int8)
-        decoder = FastSSCDecoder(mask=mask, is_systematic=True)
+        decoder = FastSSCDecoder(mask=mask, is_systematic=True, n=self.n)
         self.assertEqual(len(decoder._decoding_tree.leaves), 1)
 
-        decoder.set_initial_state(self.received_llr)
-        decoder()
+        decoder.decode(self.received_llr)
         np.testing.assert_equal(
             decoder.result,
             np.array(self.received_llr < 0, dtype=np.int8)
@@ -46,11 +45,10 @@ class TestFastSSCDecoder(TestCase):
 
     def test_spc_node_decoder(self):
         mask = np.array([0, 1, 1, 1, 1, 1, 1, 1], dtype=np.int8)
-        decoder = FastSSCDecoder(mask=mask, is_systematic=True)
+        decoder = FastSSCDecoder(mask=mask, is_systematic=True, n=self.n)
         self.assertEqual(len(decoder._decoding_tree.leaves), 1)
 
-        decoder.set_initial_state(self.received_llr)
-        decoder()
+        decoder.decode(self.received_llr)
         np.testing.assert_equal(
             decoder.result,
             np.array([1, 1, 0, 0, 1, 1, 1, 1], dtype=np.int8)
@@ -58,11 +56,10 @@ class TestFastSSCDecoder(TestCase):
 
     def test_repetition_node_decoder(self):
         mask = np.array([0, 0, 0, 0, 0, 0, 0, 1], dtype=np.int8)
-        decoder = FastSSCDecoder(mask=mask, is_systematic=True)
+        decoder = FastSSCDecoder(mask=mask, is_systematic=True, n=self.n)
         self.assertEqual(len(decoder._decoding_tree.leaves), 1)
 
-        decoder.set_initial_state(self.received_llr)
-        decoder()
+        decoder.decode(self.received_llr)
         np.testing.assert_equal(
             decoder.result,
             np.ones(self.length, dtype=np.int8)
@@ -70,11 +67,10 @@ class TestFastSSCDecoder(TestCase):
 
     def test_repetition_spc_node_decoder(self):
         mask = np.array([0, 0, 0, 1, 0, 1, 1, 1], dtype=np.int8)
-        decoder = FastSSCDecoder(mask=mask, is_systematic=True)
+        decoder = FastSSCDecoder(mask=mask, is_systematic=True, n=self.n)
         self.assertEqual(len(decoder._decoding_tree.leaves), 2)
 
-        decoder.set_initial_state(self.received_llr)
-        decoder()
+        decoder.decode(self.received_llr)
 
         # Check nodes
         # Left node
@@ -107,11 +103,10 @@ class TestFastSSCDecoder(TestCase):
 
     def test_spc_repetition_node_decoder(self):
         mask = np.array([0, 1, 1, 1, 0, 0, 0, 1], dtype=np.int8)
-        decoder = FastSSCDecoder(mask=mask, is_systematic=True)
+        decoder = FastSSCDecoder(mask=mask, is_systematic=True, n=self.n)
         self.assertEqual(len(decoder._decoding_tree.leaves), 2)
 
-        decoder.set_initial_state(self.received_llr)
-        decoder()
+        decoder.decode(self.received_llr)
 
         # Check nodes
         # Left node
@@ -159,15 +154,14 @@ class TestFastSSCDecoder(TestCase):
             np.array([0, ], dtype=np.int8),
             np.array([0, 1, 1, 1, ], dtype=np.int8),
         ]
-        decoder = FastSSCDecoder(mask=mask, is_systematic=True)
+        decoder = FastSSCDecoder(mask=mask, is_systematic=True, n=4)
 
         # Check tree structure
         self.assertEqual(len(decoder._decoding_tree.leaves), len(sub_codes))
         for i, leaf in enumerate(decoder._decoding_tree.leaves):
             np.testing.assert_equal(leaf._mask, sub_codes[i])
 
-        decoder.set_initial_state(long_msg)
-        decoder()
+        decoder.decode(long_msg)
 
         # Check nodes
         expected_llr = [

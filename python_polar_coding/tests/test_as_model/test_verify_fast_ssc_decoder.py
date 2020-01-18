@@ -1,4 +1,4 @@
-from polar_codes import FastSSCPolarCode
+from python_polar_coding.polar_codes import FastSSCPolarCode
 
 from .sc import VerifySystematicSCCode
 
@@ -11,56 +11,56 @@ class VerifyFastSSCCode(VerifySystematicSCCode):
 
 class TestSystematicSCCode_1024_512(VerifyFastSSCCode):
     code_parameters = {
-        'codeword_length': 1024,
-        'info_length': 512,
+        'N': 1024,
+        'K': 512,
         'is_systematic': True
     }
 
 
 class TestSystematicSCCode_1024_256(VerifyFastSSCCode):
     code_parameters = {
-        'codeword_length': 1024,
-        'info_length': 256,
+        'N': 1024,
+        'K': 256,
         'is_systematic': True
     }
 
 
 class TestSystematicSCCode_1024_768(VerifyFastSSCCode):
     code_parameters = {
-        'codeword_length': 1024,
-        'info_length': 768,
+        'N': 1024,
+        'K': 768,
         'is_systematic': True
     }
 
 
 class TestSystematicSCCode_2048_512(VerifyFastSSCCode):
     code_parameters = {
-        'codeword_length': 2048,
-        'info_length': 512,
+        'N': 2048,
+        'K': 512,
         'is_systematic': True
     }
 
 
 class TestSystematicSCCode_2048_1024(VerifyFastSSCCode):
     code_parameters = {
-        'codeword_length': 2048,
-        'info_length': 1024,
+        'N': 2048,
+        'K': 1024,
         'is_systematic': True
     }
 
 
 class TestSystematicSCCode_2048_1536(VerifyFastSSCCode):
     code_parameters = {
-        'codeword_length': 2048,
-        'info_length': 1536,
+        'N': 2048,
+        'K': 1536,
         'is_systematic': True
     }
 
 
 class TestSystematicSCCode_8192_4096(VerifyFastSSCCode):
     code_parameters = {
-        'codeword_length': 8192,
-        'info_length': 4096,
+        'N': 8192,
+        'K': 4096,
         'design_snr': 1.4,
         'is_systematic': True,
     }

@@ -179,15 +179,18 @@ class FastSSCDecoder(SCDecoder):
     """Implements Fast SSC decoding algorithm."""
     node_class = FastSSCNode
 
-    def __init__(self, mask, is_systematic=True, code_min_size=None):
-        super().__init__(mask, is_systematic=is_systematic)
+    def __init__(self, n: int,
+                 mask: np.array,
+                 is_systematic: bool = True,
+                 code_min_size: int = 0):
+        super().__init__(n=n, mask=mask, is_systematic=is_systematic)
         self._decoding_tree = self.node_class(
             mask=self.mask,
             code_min_size=code_min_size,
         )
         self._position = 0
 
-    def set_initial_state(self, received_llr):
+    def _set_initial_state(self, received_llr):
         """Initialize decoder with received message."""
         self.current_state = np.zeros(self.n, dtype=np.int8)
         self.previous_state = np.ones(self.n, dtype=np.int8)
@@ -196,17 +199,22 @@ class FastSSCDecoder(SCDecoder):
         self._position = 0
         self._decoding_tree.root.alpha = received_llr
 
-    def __call__(self, *args, **kwargs):
+    def decode_internal(self, received_llr: np.array) -> np.array:
+        """Implementation of SC decoding method."""
+        self._set_initial_state(received_llr)
+
         # Reset the state of the tree before decoding
         for node in PreOrderIter(self._decoding_tree):
             node.is_computed = False
 
         for leaf in self._decoding_tree.leaves:
-            self.set_decoder_state(self._position)
+            self._set_decoder_state(self._position)
             self.compute_intermediate_alpha(leaf)
             leaf.compute_leaf_beta()
             self.compute_intermediate_beta(leaf)
             self.set_next_state(leaf.N)
+
+        return self.root.beta
 
     @property
     def root(self):
@@ -231,12 +239,12 @@ class FastSSCDecoder(SCDecoder):
             parent_alpha = node.parent.alpha
 
             if node.is_left:
-                node.alpha = self.compute_left_alpha(parent_alpha)
+                node.alpha = self._compute_left_alpha(parent_alpha)
                 continue
 
             left_node = node.siblings[0]
             left_beta = left_node.beta
-            node.alpha = self.compute_right_alpha(parent_alpha, left_beta)
+            node.alpha = self._compute_right_alpha(parent_alpha, left_beta)
             node.is_computed = True
 
     def compute_intermediate_beta(self, node):

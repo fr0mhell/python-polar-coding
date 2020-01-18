@@ -2,7 +2,8 @@ from unittest import TestCase
 
 import numpy as np
 
-from polar_codes.decoders.fast_ssc_decoder import FastSSCNode
+from python_polar_coding.polar_codes.decoders.fast_ssc_decoder import \
+    FastSSCNode
 
 
 class FastSSCNodeTest(TestCase):
