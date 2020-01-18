@@ -14,8 +14,8 @@ class BasePolarCodeTestMixin:
     channel_class = None
     code_parameters = dict()
 
-    @classmethod
-    def setUpClass(cls):
+    #@classmethod
+    def setUp(cls):
         cls.codec = cls.codec_class(**cls.code_parameters)
         cls.bit_errors_data = dict()
         cls.frame_errors_data = dict()

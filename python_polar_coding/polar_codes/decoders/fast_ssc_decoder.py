@@ -214,7 +214,7 @@ class FastSSCDecoder(SCDecoder):
             self.compute_intermediate_beta(leaf)
             self.set_next_state(leaf.N)
 
-        return self.root.beta
+        return self.result
 
     @property
     def root(self):

@@ -1,10 +1,7 @@
 import numba
 import numpy as np
-from anytree import PreOrderIter
 
-from ..base.functions import function_1 as fun1
-from ..base.functions import function_2 as fun2
-from ..base.functions import make_hard_decision
+from ..base.functions import function_1, function_2, make_hard_decision
 from .fast_ssc_decoder import FastSSCDecoder, FastSSCNode
 
 # LLR = 1000 is high enough to be considered as +∞ for RC-SCAN decoding
@@ -81,24 +78,24 @@ class RCSCANDecoder(FastSSCDecoder):
     """
     node_class = RCSCANNode
 
-    def __init__(self, *args, **kwargs):
-        """Additionally initialize BETA values of nodes."""
-        super().__init__(*args, **kwargs)
+    def __init__(self, n: int,
+                 mask: np.array,
+                 is_systematic: bool = True,
+                 code_min_size: int = 0,
+                 I: int = 1):
+        super().__init__(n=n, mask=mask, is_systematic=is_systematic,
+                         code_min_size=code_min_size)
+        self.I = I
 
+    def decode_internal(self, received_llr: np.array) -> np.array:
+        """Implementation of SC decoding method."""
         for leaf in self._decoding_tree.leaves:
             leaf.initialize_leaf_beta()
 
-    def clean_before_decoding(self):
-        """Reset intermediate BETA values.
+        for _ in range(self.I):
+            super().decode_internal(received_llr)
 
-        Run this before calling `__call__` method.
-
-        TODO: Add JIT
-
-        """
-        for node in PreOrderIter(self._decoding_tree):
-            if not node.is_leaf:
-                node.beta *= 0
+        return self.result
 
     def compute_intermediate_alpha(self, leaf):
         """Compute intermediate Alpha values (LLR)."""
@@ -149,12 +146,10 @@ class RCSCANDecoder(FastSSCDecoder):
         left_parent_alpha = parent_alpha[:N]
         right_parent_alpha = parent_alpha[N:]
 
-        result_alpha = np.zeros(N)
-        for i in range(N):
-            if is_left:
-                result_alpha[i] = fun1(left_parent_alpha[i], right_parent_alpha[i], beta[i])  # noqa
-            else:
-                result_alpha[i] = fun2(left_parent_alpha[i], beta[i], right_parent_alpha[i])  # noqa
+        if is_left:
+            result_alpha = function_1(left_parent_alpha, right_parent_alpha, beta)
+        else:
+            result_alpha = function_2(left_parent_alpha, beta, right_parent_alpha)
         return result_alpha
 
     @staticmethod
@@ -164,15 +159,15 @@ class RCSCANDecoder(FastSSCDecoder):
         left_parent_alpha = parent_alpha[:N]
         right_parent_alpha = parent_alpha[N:]
 
-        parent_beta = np.zeros(2 * N)
-        for i in range(N):
-            parent_beta[i] = fun1(left_beta[i], right_beta[i], right_parent_alpha[i])  # noqa
-            parent_beta[i + N] = fun2(left_beta[i], left_parent_alpha[i], right_beta[i])  # noqa
+        parent_beta_left = function_1(left_beta, right_beta, right_parent_alpha)
+        parent_beta_right = function_2(left_beta, left_parent_alpha, right_beta)
 
-        return parent_beta
+        return np.append(parent_beta_left, parent_beta_right)
 
     def _compute_result_beta(self):
         """Compute result BETA values."""
         alpha = self.root.alpha
+        if not self.root.children:
+            return self.root.beta
         left, right = self.root.children
         return self.compute_parent_beta(left.beta, right.beta, alpha)

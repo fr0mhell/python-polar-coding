@@ -98,7 +98,9 @@ class SCListDecoder(BaseDecoder):
     """SC List decoding."""
     path_class = SCPath
 
-    def __init__(self, n: int, mask: np.array, is_systematic: bool = True,
+    def __init__(self, n: int,
+                 mask: np.array,
+                 is_systematic: bool = True,
                  L: int = 1):
         super().__init__(n=n, mask=mask, is_systematic=is_systematic)
         self.L = L
