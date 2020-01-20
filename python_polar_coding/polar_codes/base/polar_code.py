@@ -89,7 +89,7 @@ class BasicPolarCode(metaclass=abc.ABCMeta):
 
     def _compute_channels_estimates(self, N: int, n: int, design_snr: float,
                                     pcc_method: str):
-        """Compute bit channel estimates for the polar code."""
+        """Compute bit channels estimates for the polar code."""
         if pcc_method == self.CUSTOM:
             return None
 
@@ -112,7 +112,7 @@ class BasicPolarCode(metaclass=abc.ABCMeta):
         return self._construct_polar_mask(self.K)
 
     def _construct_polar_mask(self, K):
-        """Build polar code Mask based on channel estimates.
+        """Build polar code Mask based on channels estimates.
 
         0 means frozen bit, 1 means information position.
 
@@ -121,7 +121,7 @@ class BasicPolarCode(metaclass=abc.ABCMeta):
 
         """
         # represent each bit as tuple of 3 parameters:
-        # (order, channel estimate, frozen / information position)
+        # (order, channels estimate, frozen / information position)
         mask = [[i, b, 0] for i, b in enumerate(self.channel_estimates)]
 
         # sort channels due to estimates

@@ -13,7 +13,7 @@ def single_transmission(code, channel):
 
     Args:
         code (PolarCode): Polar code tp simulate.
-        channel (PSKModAWGNChannel): Transmission channel with configured SNR.
+        channel (PSKModAWGNChannel): Transmission channels with configured SNR.
 
     Returns:
         bit_errors (int): Number of bit errors occurred while message
@@ -53,7 +53,7 @@ def simulation_task(code, channel, db_name, collection, messages=1000):
         'bit_errors': bit_errors,
         'word_errors': word_errors,
         'words': messages,
-        'channel': str(channel),
+        'channels': str(channel),
         'start': start,
         'end': end
     })

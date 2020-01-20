@@ -3,7 +3,7 @@ import numpy as np
 
 
 class Simple_BPSK_AWGN_Channel:
-    """Simple model of BPSK-modulation + AWGN channel.
+    """Simple model of BPSK-modulation + AWGN channels.
 
     Args:
         snr_db (float): Signal-to-noise ratio (dB)
@@ -56,7 +56,7 @@ class Simple_BPSK_AWGN_Channel:
 
 
 class Verification_BPSK_AWGN_Channel(Simple_BPSK_AWGN_Channel):
-    """Custom model of AWGN channel.
+    """Custom model of AWGN channels.
 
     Implemented for the comparison with the SC decoder proposed by H. Vangala,
     E. Viterbo, and Yi Hong (See `PlotPC and PlotPCSystematic`):

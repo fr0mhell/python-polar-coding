@@ -150,7 +150,7 @@ class BasicPolarCode:
         return self._construct_polar_mask(info_length)
 
     def _construct_polar_mask(self, info_length):
-        """Build polar code Mask based on channel estimates.
+        """Build polar code Mask based on channels estimates.
 
         0 means frozen bit, 1 means information position.
 
@@ -159,7 +159,7 @@ class BasicPolarCode:
 
         """
         # represent each bit as tuple of 3 parameters:
-        # (order, channel estimate, frozen / information position)
+        # (order, channels estimate, frozen / information position)
         mask = [[i, b, 0] for i, b in enumerate(self.channel_estimates)]
 
         # sort channels due to estimates

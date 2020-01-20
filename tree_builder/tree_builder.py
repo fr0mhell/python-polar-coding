@@ -1,5 +1,6 @@
-from typing import List, Tuple
 import random
+from typing import List, Tuple
+
 import numpy as np
 
 from polar_codes import FastSSCPolarCode
