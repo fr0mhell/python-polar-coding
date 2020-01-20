@@ -10,8 +10,8 @@ from python_polar_coding.polar_codes.decoders.rc_scan_decoder import (
 
 class TestRCSCANNode(TestCase):
 
-    # @classmethod
-    def setUp(cls):
+    @classmethod
+    def setUpClass(cls):
         cls.llr = np.array([-2.7273, 8.7327, -0.1087, 1.6463, ])
 
     def test_zero_node(self):

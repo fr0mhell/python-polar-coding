@@ -6,8 +6,8 @@ from python_polar_coding.polar_codes.decoders import FastSSCDecoder
 
 
 class TestFastSSCDecoder(TestCase):
-    #@classmethod
-    def setUp(cls):
+    @classmethod
+    def setUpClass(cls):
         cls.received_llr = np.array([
             -2.7273,
             -8.7327,

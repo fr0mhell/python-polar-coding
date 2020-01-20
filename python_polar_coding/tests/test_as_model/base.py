@@ -1,26 +1,27 @@
-import json
-import uuid
 from unittest import TestCase
 
 import numpy as np
 
-from .channels import SimpleBPSKModAWGNChannel, VerificationChannel
+from python_polar_coding.channels.simple import SimpleBPSKModulationAWGN
 
 
-class BasePolarCodeTestMixin:
+class BasicVerifyPolarCodeTestCase(TestCase):
     """Provides simple BPSK modulator for polar codes testing."""
     messages = None
-    codec_class = None
-    channel_class = None
-    code_parameters = dict()
+    polar_code_class = None
+    channel_class = SimpleBPSKModulationAWGN
+    code_parameters = None
 
-    #@classmethod
-    def setUp(cls):
-        cls.codec = cls.codec_class(**cls.code_parameters)
-        cls.bit_errors_data = dict()
-        cls.frame_errors_data = dict()
-        cls.result = cls.codec.to_dict()
-        cls.result_path = f'experiments/{str(uuid.uuid4())}'
+    @classmethod
+    def setUpClass(cls):
+        fec_rate = cls.code_parameters['K'] / cls.code_parameters['N']
+        cls.channel = cls.channel_class(fec_rate)
+        cls.polar_code = cls.polar_code_class(**cls.code_parameters)
+        cls.result = cls.polar_code.to_dict()
+
+    @classmethod
+    def tearDownClass(cls):
+        print(cls.result)
 
     @property
     def N(self):
@@ -30,81 +31,73 @@ class BasePolarCodeTestMixin:
     def K(self):
         return self.code_parameters['K']
 
-    def _get_channel(self, snr_db):
-        return self.channel_class(snr_db)
-
-    def _message_transmission_test(self, channel, with_noise=True):
-        """Basic workflow to compute BER and FER on message transmission"""
-        bit_errors = frame_errors = 0  # bit and frame error ratio
-
-        for m in range(self.messages):
-            message = np.random.randint(0, 2, self.K)
-            encoded = self.codec.encode(message)
-            llr = channel.transmit(encoded, with_noise)
-            decoded = self.codec.decode(llr)
-
-            fails = np.sum(message != decoded)
-            bit_errors += fails
-            frame_errors += fails > 0
-
-        return [
-            bit_errors / (self.messages * self.K),
-            frame_errors / self.messages,
-        ]
-
-    def _base_test(self, snr_db=0.0, with_noise=True):
-        channel = self._get_channel(snr_db)
-
-        bit_errors, frame_errors = self._message_transmission_test(
-            channel,
-            with_noise,
-        )
-
-        # `-1` means simulation without noise
-        snr_db = snr_db if with_noise else '-1'
-        self.bit_errors_data.update({str(snr_db): bit_errors})
-        self.frame_errors_data.update({str(snr_db): frame_errors})
-
-        return bit_errors, frame_errors
-
     def test_sc_decoder_without_noise(self):
-        """Test a Polar Code without any noisy channel.
+        """Test a Polar Code without any noise.
 
         For correctly implemented code the data is transmitted and decoded
         without errors.
 
         """
-        bit_errors, frame_errors = self._base_test(with_noise=False)
+        bit_errors, frame_errors = self._message_transmission(
+            snr_db=10,
+            with_noise=False,
+        )
         self.assertEqual(bit_errors, 0)
         self.assertEqual(frame_errors, 0)
 
-    def tearDown(self):
-        self.result['bit_error_rate'] = self.bit_errors_data
-        self.result['frame_error_rate'] = self.frame_errors_data
-        self.result['messages'] = self.messages
+        self.result.update({
+            'no_noise': {
+                'bit_errors': bit_errors,
+                'frame_errors': frame_errors
+            }
+        })
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.result['bit_error_rate'] = cls.bit_errors_data
-        cls.result['frame_error_rate'] = cls.frame_errors_data
-        cls.result['messages'] = cls.messages
+    def test_sc_decoder_10_db(self):
+        """Test a Polar Code with low noise power.
 
-        with open(cls._get_filename(), 'w') as fp:
-            json.dump(cls.result, fp)
+        For correctly implemented code the data is transmitted and decoded
+        without errors for SNR = 10 dB.
 
-    @classmethod
-    def _get_filename(cls):
-        N = cls.code_parameters['codeword_length']
-        K = cls.code_parameters['info_length']
-        return f'{N}_{K}.json'
+        Use the test as the example of modelling, but without assertions.
 
+        """
+        bit_errors, frame_errors = self._modelling_test(snr_db=10.0)
+        self.assertEqual(bit_errors, 0)
+        self.assertEqual(frame_errors, 0)
 
-class SimpleBPSKAWGNTestCase(BasePolarCodeTestMixin, TestCase):
-    channel_class = SimpleBPSKModAWGNChannel
+    def _get_channel(self):
+        fec_rate = self.K / self.N
+        return self.channel_class(fec_rate)
 
+    def _message_transmission(self, snr_db, with_noise=True):
+        """Basic workflow to compute BER and FER on message transmission"""
+        bit_errors = frame_errors = 0
 
-class VerificationChannelTestCase(BasePolarCodeTestMixin, TestCase):
-    channel_class = VerificationChannel
+        for m in range(self.messages):
+            message = np.random.randint(0, 2, self.K)
+            encoded = self.polar_code.encode(message)
+            llr = self.channel.transmit(
+                message=encoded,
+                snr_db=snr_db,
+                with_noise=with_noise,
+            )
+            decoded = self.polar_code.decode(llr)
 
-    def _get_channel(self, snr_db):
-        return self.channel_class(snr_db, K=self.K, N=self.N)
+            fails = np.sum(message != decoded)
+            bit_errors += fails
+            frame_errors += fails > 0
+
+        return bit_errors, frame_errors
+
+    def _modelling_test(self, snr_db):
+        bit_errors, frame_errors = self._message_transmission(
+            snr_db=snr_db,
+            with_noise=True,
+        )
+        self.result.update({
+            snr_db: {
+                'bit_errors': bit_errors,
+                'frame_errors': frame_errors
+            }
+        })
+        return bit_errors, frame_errors

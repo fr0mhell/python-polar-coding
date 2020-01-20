@@ -40,8 +40,8 @@ class TestRCSCANDecoder(TestCase):
 
 
 class TestRCSCANDecoderComplex(TestCase):
-    # @classmethod
-    def setUp(cls):
+    @classmethod
+    def setUpClass(cls):
         cls.mask = np.array(
             [0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, ],
             dtype=np.int8
