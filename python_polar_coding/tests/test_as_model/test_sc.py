@@ -1,10 +1,11 @@
+from unittest import TestCase
+
 from python_polar_coding.polar_codes.sc import SCPolarCode
 
-from .base import BasicVerifyPolarCodeTestCase
+from .base import BasicVerifyPolarCode
 
 
-class TestSCCode_1024_512(BasicVerifyPolarCodeTestCase):
-    messages = 1000
+class TestSCCode_1024_512(BasicVerifyPolarCode, TestCase):
     polar_code_class = SCPolarCode
     code_parameters = {
         'N': 1024,
@@ -12,8 +13,7 @@ class TestSCCode_1024_512(BasicVerifyPolarCodeTestCase):
     }
 
 
-class TestSCCode_1024_256(BasicVerifyPolarCodeTestCase):
-    messages = 1000
+class TestSCCode_1024_256(BasicVerifyPolarCode, TestCase):
     polar_code_class = SCPolarCode
     code_parameters = {
         'N': 1024,
@@ -21,8 +21,7 @@ class TestSCCode_1024_256(BasicVerifyPolarCodeTestCase):
     }
 
 
-class TestSCCode_1024_768(BasicVerifyPolarCodeTestCase):
-    messages = 1000
+class TestSCCode_1024_768(BasicVerifyPolarCode, TestCase):
     polar_code_class = SCPolarCode
     code_parameters = {
         'N': 1024,
@@ -30,8 +29,7 @@ class TestSCCode_1024_768(BasicVerifyPolarCodeTestCase):
     }
 
 
-class TestSCCode_2048_512(BasicVerifyPolarCodeTestCase):
-    messages = 1000
+class TestSCCode_2048_512(BasicVerifyPolarCode, TestCase):
     polar_code_class = SCPolarCode
     code_parameters = {
         'N': 2048,
@@ -39,8 +37,7 @@ class TestSCCode_2048_512(BasicVerifyPolarCodeTestCase):
     }
 
 
-class TestSCCode_2048_1024(BasicVerifyPolarCodeTestCase):
-    messages = 1000
+class TestSCCode_2048_1024(BasicVerifyPolarCode, TestCase):
     polar_code_class = SCPolarCode
     code_parameters = {
         'N': 2048,
@@ -48,8 +45,7 @@ class TestSCCode_2048_1024(BasicVerifyPolarCodeTestCase):
     }
 
 
-class TestSCCode_2048_1536(BasicVerifyPolarCodeTestCase):
-    messages = 1000
+class TestSCCode_2048_1536(BasicVerifyPolarCode, TestCase):
     polar_code_class = SCPolarCode
     code_parameters = {
         'N': 2048,

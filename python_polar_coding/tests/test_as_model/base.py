@@ -1,13 +1,11 @@
-from unittest import TestCase
-
 import numpy as np
 
 from python_polar_coding.channels.simple import SimpleBPSKModulationAWGN
 
 
-class BasicVerifyPolarCodeTestCase(TestCase):
+class BasicVerifyPolarCode:
     """Provides simple BPSK modulator for polar codes testing."""
-    messages = None
+    messages = 100
     polar_code_class = None
     channel_class = SimpleBPSKModulationAWGN
     code_parameters = None
