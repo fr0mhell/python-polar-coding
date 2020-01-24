@@ -1,10 +1,18 @@
-anytree
-# Enables caching for `anytree` during search
-fastcache
+numba
+numpy
+
+# Python CRC implementation
+pycrc
+
 ipdb
 ipython
 isort
-numba
-numpy
-pycrc
+
+# Tree implementation
+anytree
+
+# Enables caching for `anytree` during search
+fastcache
+
+# Mongo client
 pymongo
