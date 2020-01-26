@@ -1,7 +1,8 @@
 from unittest import TestCase
 
 import numpy as np
-from polar_codes.base import BasicPolarCode
+
+from python_polar_coding.polar_codes.base.polar_code import BasicPolarCode
 
 
 class TestBasicPolarCode(TestCase):
