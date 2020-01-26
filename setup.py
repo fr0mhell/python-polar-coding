@@ -1,7 +1,14 @@
 import setuptools
+from pip._internal.download import PipSession
+from pip._internal.req import parse_requirements
 
 with open('README.md', 'r') as fh:
     long_description = fh.read()
+
+requirements = parse_requirements(
+    filename='requirements/production.txt',
+    session=PipSession()
+)
 
 setuptools.setup(
     name='python-polar-coding',
@@ -19,12 +26,5 @@ setuptools.setup(
         'Operating System :: OS Independent',
     ],
     python_requires='>=3.6',
-    install_requires=[
-        'numba==0.44.0',
-        'numpy==1.16.4',
-        'pycrc==1.21',
-        'anytree==2.7.1',
-        'fastcache==1.1.0',
-        'pymongo==3.9.0',
-    ],
+    install_requires=[str(requirement.req) for requirement in requirements],
 )
