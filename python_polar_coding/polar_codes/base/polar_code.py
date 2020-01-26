@@ -4,8 +4,7 @@ from typing import Union
 
 import numpy as np
 
-from . import encoder, pcc, utils
-from .crc import CRC
+from . import crc, encoder, pcc, utils
 
 
 class BasicPolarCode(metaclass=abc.ABCMeta):
@@ -20,13 +19,11 @@ class BasicPolarCode(metaclass=abc.ABCMeta):
     encoder_class = encoder.Encoder
     decoder_class = None
 
-    CUSTOM = 'custom'
-
     BHATTACHARYYA = 'bhattacharyya'
     GAUSSIAN = 'gaussian'
-    MONTE_CARLO = 'monte_carlo'
+    MONTE_CARLO = 'monte carlo'
 
-    pcc_methods = {
+    PCC_METHODS = {
         BHATTACHARYYA: pcc.bhattacharyya_bounds,
     }
 
@@ -90,10 +87,10 @@ class BasicPolarCode(metaclass=abc.ABCMeta):
     def _compute_channels_estimates(self, N: int, n: int, design_snr: float,
                                     pcc_method: str):
         """Compute bit channels estimates for the polar code."""
-        if pcc_method == self.CUSTOM:
+        if pcc_method not in self.PCC_METHODS.keys():
             return None
 
-        pcc_method = self.pcc_methods[pcc_method]
+        pcc_method = self.PCC_METHODS[pcc_method]
         channel_estimates = pcc_method(N, design_snr)
 
         # bit-reversal approach https://arxiv.org/abs/1307.7154 (Section III-D)
@@ -154,7 +151,7 @@ class BasicPolarCodeWithCRC(BasicPolarCode):
         assert K + crc_size < N, (f'Cannot create Polar code with N = {N},'
                                   f' K = {K} and CRC {crc_size}.\n'
                                   f'N must be bigger than (K + CRC size).')
-        self.crc_codec = CRC(crc_size)
+        self.crc_codec = crc.CRC(crc_size)
 
         super().__init__(N=N, K=K,
                          is_systematic=is_systematic,

@@ -3,25 +3,35 @@ import numpy as np
 
 
 class SimpleBPSKModulationAWGN:
-    """Simple model of BPSK-modulation + AWGN channel."""
-    symbol_energy = 1.0
+    """Simple model of BPSK-modulation + AWGN channel.
+
+    Implemented for the comparison with the SC decoder proposed by H. Vangala,
+    E. Viterbo, and Yi Hong (See `PlotPC and PlotPCSystematic`):
+    https://ecse.monash.edu/staff/eviterbo/polarcodes.html.
+
+    """
+    noise_power = 2.0
 
     def __init__(self, fec_rate: float):
         self.fec_rate = fec_rate
 
-    def transmit(self, message: np.array, snr_db: float,
+    def transmit(self, message: np.array,
+                 snr_db: float,
                  with_noise: bool = True) -> np.array:
         """Transmit BPSK-modulated message over AWGN message."""
-        transmitted = self._modulate(message, self.symbol_energy)
-        noise_power = self._compute_noise_power(snr_db, self.fec_rate)
+        symbol_energy = self._compute_symbol_energy(snr_db, self.fec_rate)
+        transmitted = self._modulate(message, symbol_energy)
 
         if with_noise:
-            transmitted = self._add_noise(transmitted, noise_power)
+            transmitted = self._add_noise(transmitted, self.noise_power)
 
-        return self._llr_detection(transmitted, self.symbol_energy, noise_power)
+        return self._llr_detection(transmitted, symbol_energy, self.noise_power)  # noqa
 
-    def _compute_noise_power(self, snr_db: float, fec_rate: float) -> float:
-        return self.symbol_energy / (2 * fec_rate * np.power(10, snr_db / 10))
+    @staticmethod
+    @numba.njit
+    def _compute_symbol_energy(snr_db, fec_rate):
+        snr = np.power(10, snr_db / 10)
+        return snr * 2 * fec_rate
 
     @staticmethod
     @numba.njit
