@@ -6,4 +6,5 @@
 .python-version
 .pytest_cache
 firestore/*credentials*
+src*
 tests/_trial_temp*

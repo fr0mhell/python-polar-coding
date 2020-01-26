@@ -1,13 +1,8 @@
-"""
-left = 0.0506
-right = -0.0552
-bit = 0
-right - (2 * bit - 1) * left
-"""
 from unittest import TestCase
 
 import numpy as np
-from polar_codes.decoders import SCListDecoder
+
+from python_polar_coding.polar_codes.decoders import SCListDecoder
 
 
 class TestSCListDecoder(TestCase):
@@ -19,9 +14,10 @@ class TestSCListDecoder(TestCase):
         ])
         cls.mask = np.array([0, 1, 0, 1, 0, 1, 1, 1, ], dtype=np.int8)
         cls.decoder = SCListDecoder(
-            cls.mask,
+            n=3,
+            mask=cls.mask,
             is_systematic=False,
-            list_size=4,
+            L=4,
         )
 
         cls.expected_llrs = [
@@ -407,7 +403,7 @@ class TestSCListDecoder(TestCase):
 
     def _decoding_step(self, position):
         """Single step of decoding process."""
-        self.decoder(position)
+        self.decoder._decode_position(position)
         for i, path in enumerate(self.decoder.paths):
 
             expected_llr = self.expected_llrs[position]
@@ -433,6 +429,6 @@ class TestSCListDecoder(TestCase):
 
     def test_decoding_steps(self):
         """Test SC list decoding process step-by-step."""
-        self.decoder.initialize(self.received_llr)
+        self.decoder._set_initial_state(self.received_llr)
         for i in range(self.N):
             self._decoding_step(i)

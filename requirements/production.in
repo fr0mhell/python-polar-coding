@@ -2,11 +2,8 @@ numba
 numpy
 
 # Python CRC implementation
-pycrc
-
-ipdb
-ipython
-isort
+# Fork used because PyPI package was removed
+-e git+git://github.com/fr0mhell/PyCRC.git#egg=PyCRC
 
 # Tree implementation
 anytree

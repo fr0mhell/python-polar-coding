@@ -1,0 +1,7 @@
+# Additional packages for the development
+
+-r production.in
+
+ipdb
+ipython
+isort
