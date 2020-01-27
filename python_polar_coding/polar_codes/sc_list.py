@@ -44,13 +44,13 @@ class SCListPolarCodeWithCRC(BasicPolarCodeWithCRC):
                  pcc_method: str = BasicPolarCode.BHATTACHARYYA,
                  L: int = 1):
 
+        self.L = L
         super().__init__(N=N, K=K,
                          is_systematic=is_systematic,
                          design_snr=design_snr,
                          mask=mask,
                          pcc_method=pcc_method,
                          crc_size=crc_size)
-        self.L = L
 
     def get_decoder(self):
         return self.decoder_class(n=self.n, mask=self.mask,
