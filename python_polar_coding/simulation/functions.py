@@ -29,7 +29,7 @@ def transmission(code, channel, snr_db):
     return bit_errors, frame_errors
 
 
-def simulation(code, channel, snr_db, messages):
+def simulation_task(code, channel, snr_db, messages):
     bit_errors, frame_errors = 0, 0
 
     for m in range(messages):

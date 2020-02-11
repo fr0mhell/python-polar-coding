@@ -68,6 +68,8 @@ def simulate_from_params(experiment: Dict, url: str):
     code_type = experiment.pop('code_type')
     snr = experiment.pop('snr')
     messages = experiment.pop('messages')
+    # Pop `type` to prevent problems with initialization
+    typ = experiment.pop('type')
 
     result = simulate(
         code_type=code_type,
@@ -93,6 +95,7 @@ def simulate_multi_core(experiments: int, url: str):
     """Simulate polar code chain using multiple cores."""
     params_for_experiments = get_params(url=url, experiments=experiments)
     workers = multiprocessing.cpu_count()
+
     print(f'Workers: {workers}\n'
           f'Number of experiments: {len(params_for_experiments)}')
 

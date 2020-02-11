@@ -2,7 +2,7 @@ from datetime import datetime
 
 from python_polar_coding.channels.simple import SimpleBPSKModulationAWGN
 from python_polar_coding.polar_codes.fast_ssc import FastSSCPolarCode
-from python_polar_coding.simulation import simulation
+from python_polar_coding.simulation import simulation_task
 
 
 def fast_ssc_simulation():
@@ -14,10 +14,10 @@ def fast_ssc_simulation():
 
     for snr in snr_range:
         start = datetime.now()
-        result = simulation(code=code,
-                            channel=channel,
-                            snr_db=snr,
-                            messages=1000)
+        result = simulation_task(code=code,
+                                 channel=channel,
+                                 snr_db=snr,
+                                 messages=1000)
         end = datetime.now()
         print(f'Experiment took {(end-start).seconds} seconds')
         results.append(result)

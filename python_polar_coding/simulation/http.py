@@ -1,8 +1,7 @@
 import requests
 
 
-def prepare(url, snr_range, required_messages, nodes,
-            repetitions=1,
+def prepare(url, snr_range, required_messages,
             code_types=None,
             code_lengths=None):
     params = {
@@ -10,8 +9,6 @@ def prepare(url, snr_range, required_messages, nodes,
         'code_lengths': code_lengths,
         'snr_range': snr_range,
         'required_messages': required_messages,
-        'nodes': nodes,
-        'repetitions': repetitions,
     }
     try:
         return requests.post(f'{url}/prepare', json=params)
