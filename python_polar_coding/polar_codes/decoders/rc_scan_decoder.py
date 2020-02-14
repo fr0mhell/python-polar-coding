@@ -1,5 +1,6 @@
 import numba
 import numpy as np
+from anytree import PreOrderIter
 
 from ..base.functions import function_1, function_2, make_hard_decision
 from .fast_ssc_decoder import FastSSCDecoder, FastSSCNode
@@ -89,6 +90,8 @@ class RCSCANDecoder(FastSSCDecoder):
 
     def decode_internal(self, received_llr: np.array) -> np.array:
         """Implementation of SC decoding method."""
+        self.clean_before_decoding()
+
         for leaf in self._decoding_tree.leaves:
             leaf.initialize_leaf_beta()
 
@@ -96,6 +99,18 @@ class RCSCANDecoder(FastSSCDecoder):
             super().decode_internal(received_llr)
 
         return self.result
+
+    def clean_before_decoding(self):
+        """Reset intermediate BETA values.
+
+        Run this before calling `__call__` method.
+
+        TODO: Add JIT
+
+        """
+        for node in PreOrderIter(self._decoding_tree):
+            if not node.is_leaf:
+                node.beta *= 0
 
     def compute_intermediate_alpha(self, leaf):
         """Compute intermediate Alpha values (LLR)."""
