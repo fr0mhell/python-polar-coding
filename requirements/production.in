@@ -13,3 +13,6 @@ fastcache
 
 # Mongo client
 pymongo
+
+# HTTP requests
+requests

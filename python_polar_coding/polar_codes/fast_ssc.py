@@ -9,8 +9,3 @@ class FastSSCPolarCode(BasicPolarCode):
     def get_decoder(self):
         return self.decoder_class(n=self.n, mask=self.mask,
                                   is_systematic=self.is_systematic)
-
-    def to_dict(self):
-        d = super().to_dict()
-        d.update({'M': self.decoder.M})
-        return d

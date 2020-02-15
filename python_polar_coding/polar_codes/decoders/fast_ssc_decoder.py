@@ -83,7 +83,7 @@ class FastSSCNode(Node):
 
     @property
     def zero_min_size(self):
-        return 1 if self.M is None else self.M
+        return self.M or 1
 
     @property
     def one_min_size(self):
@@ -91,11 +91,11 @@ class FastSSCNode(Node):
 
     @property
     def repetition_min_size(self):
-        return self.__class__.REPETITION_MIN_SIZE if self.M is None else self.M
+        return self.M or self.__class__.REPETITION_MIN_SIZE
 
     @property
     def spc_min_size(self):
-        return self.__class__.SPC_MIN_SIZE if self.M is None else self.M
+        return self.M or self.__class__.SPC_MIN_SIZE
 
     def to_dict(self):
         return {

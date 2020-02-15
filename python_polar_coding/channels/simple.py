@@ -2,6 +2,28 @@ import numba
 import numpy as np
 
 
+class SimpleAWGNChannel:
+    """Simple AWGN channel.
+
+    Implemented for the comparison with the SC decoder proposed by H. Vangala,
+    E. Viterbo, and Yi Hong (See `PlotPC and PlotPCSystematic`):
+    https://ecse.monash.edu/staff/eviterbo/polarcodes.html.
+
+    """
+    noise_power = 2.0
+
+    def transmit(self, message: np.array) -> np.array:
+        """Transmit BPSK-modulated message over AWGN channel."""
+        return self._add_noise(message, self.noise_power)
+
+    @staticmethod
+    @numba.njit
+    def _add_noise(signal: np.array, noise_power: float) -> np.array:
+        """Add AWGN noise to signal."""
+        noise = np.sqrt(noise_power / 2) * np.random.randn(signal.size)
+        return signal + noise
+
+
 class SimpleBPSKModulationAWGN:
     """Simple model of BPSK-modulation + AWGN channel.
 

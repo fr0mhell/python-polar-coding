@@ -7,9 +7,12 @@
 -e git+git://github.com/fr0mhell/PyCRC.git#egg=PyCRC
 anytree==2.8.0
 backcall==0.1.0           # via ipython
+certifi==2019.11.28       # via requests
+chardet==3.0.4            # via requests
 colorama==0.4.3           # via ipython
 decorator==4.4.1          # via ipython, traitlets
 fastcache==1.1.0
+idna==2.8                 # via requests
 ipdb==0.12.3
 ipython-genutils==0.2.0   # via traitlets
 ipython==7.11.1
@@ -23,6 +26,8 @@ pickleshare==0.7.5        # via ipython
 prompt-toolkit==3.0.2     # via ipython
 pygments==2.5.2           # via ipython
 pymongo==3.10.1
+requests==2.22.0
 six==1.14.0               # via anytree, traitlets
 traitlets==4.3.3          # via ipython
+urllib3==1.25.8           # via requests
 wcwidth==0.1.8            # via prompt-toolkit
