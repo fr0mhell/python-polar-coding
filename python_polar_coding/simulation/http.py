@@ -16,19 +16,20 @@ def prepare(url, snr_range, required_messages,
         print(e)
 
 
-def get_params(url, experiments):
+def get_params(url):
     try:
-        resp = requests.put(f'{url}/get-params', json={'experiments': experiments})
+        resp = requests.put(f'{url}/get-params')
         return resp.json()
     except Exception as e:
         print(e)
 
 
-def save_result(url, result, code_id, code_type, channel_type):
+def save_result(url, result, code_id, code_type, cls, channel_type):
     result.update({'route_params': {
         'code_id': code_id,
         'code_type': code_type,
         'channel_type': channel_type,
+        'type': cls,
     }})
     try:
         requests.post(f'{url}/save-result', json=result)

@@ -61,15 +61,17 @@ def simulate(code_type: str, channel_type: str, snr: float, messages: int,
     }
 
 
-def simulate_from_params(experiment: Dict, url: str):
+def simulate_from_params(url: str):
     """Simulate polar code chain using remote params."""
+    experiment = get_params(url=url)
+
     channel_type = experiment.pop('channel_type')
     code_id = experiment.pop('code_id')
     code_type = experiment.pop('code_type')
     snr = experiment.pop('snr')
     messages = experiment.pop('messages')
     # Pop `type` to prevent problems with initialization
-    typ = experiment.pop('type')
+    cls = experiment.pop('type')
 
     result = simulate(
         code_type=code_type,
@@ -87,23 +89,19 @@ def simulate_from_params(experiment: Dict, url: str):
         result=result,
         code_id=code_id,
         code_type=code_type,
-        channel_type=channel_type
+        channel_type=channel_type,
+        cls=cls,
     )
 
 
 def simulate_multi_core(experiments: int, url: str):
     """Simulate polar code chain using multiple cores."""
-    params_for_experiments = get_params(url=url, experiments=experiments)
     workers = multiprocessing.cpu_count()
-
-    print(f'Workers: {workers}\n'
-          f'Number of experiments: {len(params_for_experiments)}')
+    print(f'Workers: {workers}; Number of experiments: {experiments}')
 
     with futures.ProcessPoolExecutor(max_workers=workers) as ex:
-        run_tasks = {
-            ex.submit(simulate_from_params, *(params, url)): (params, url)
-            for params in params_for_experiments
-        }
+        run_tasks = {ex.submit(simulate_from_params, *(url, )): (url, )
+                     for _ in range(experiments)}
         for future in futures.as_completed(run_tasks):
             try:
                 future.result()
