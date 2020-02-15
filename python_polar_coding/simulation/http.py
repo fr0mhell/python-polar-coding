@@ -18,7 +18,7 @@ def prepare(url, snr_range, required_messages,
 
 def get_params(url):
     try:
-        resp = requests.put(f'{url}/get-params')
+        resp = requests.put(f'{url}/get-params', json={})
         return resp.json()
     except Exception as e:
         print(e)
