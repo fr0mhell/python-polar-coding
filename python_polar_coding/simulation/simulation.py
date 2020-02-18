@@ -81,11 +81,11 @@ def simulate_from_params(url: str):
         code_params=experiment,
     )
 
-    result = (f'Result: {result}\n'
-              f'{code_type.upper()} ({experiment["N"]}, {experiment["K"]})')
+    result_log = (f'Result: {result}\n'
+                  f'{code_type.upper()} ({experiment["N"]},{experiment["K"]})')
     if code_type == CodeTypes.RC_SCAN:
-        result += f', I = {experiment["I"]}'
-    print(result)
+        result_log += f', I = {experiment["I"]}'
+    print(result_log)
 
     resp = save_result(
         url=url,
