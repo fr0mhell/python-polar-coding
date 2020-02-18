@@ -32,6 +32,6 @@ def save_result(url, result, code_id, code_type, cls, channel_type):
         'type': cls,
     }})
     try:
-        requests.post(f'{url}/save-result', json=result)
+        return requests.post(f'{url}/save-result', json=result)
     except Exception as e:
         print(e)

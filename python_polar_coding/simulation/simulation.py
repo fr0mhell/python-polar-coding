@@ -81,10 +81,13 @@ def simulate_from_params(url: str):
         code_params=experiment,
     )
 
-    print(f'Result: {result}\n'
-          f'{code_type.upper()} ({experiment["N"]}, {experiment["K"]})')
+    result = (f'Result: {result}\n'
+              f'{code_type.upper()} ({experiment["N"]}, {experiment["K"]})')
+    if code_type == CodeTypes.RC_SCAN:
+        result += f', I = {experiment["I"]}'
+    print(result)
 
-    save_result(
+    resp = save_result(
         url=url,
         result=result,
         code_id=code_id,
@@ -92,6 +95,7 @@ def simulate_from_params(url: str):
         channel_type=channel_type,
         cls=cls,
     )
+    print(f'Status: {resp.status_code}: {resp.json()}')
 
 
 def simulate_multi_core(experiments: int, url: str):
