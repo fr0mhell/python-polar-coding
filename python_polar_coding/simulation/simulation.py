@@ -5,8 +5,7 @@ from typing import Dict
 from ..channels import SimpleAWGNChannel
 from ..modems import SimpleBPSKModem
 from ..polar_codes import FastSSCPolarCode, RCSCANPolarCode
-from . import functions
-from .http import get_params, save_result
+from . import functions, http
 
 
 class CodeTypes:
@@ -63,7 +62,10 @@ def simulate(code_type: str, channel_type: str, snr: float, messages: int,
 
 def simulate_from_params(url: str):
     """Simulate polar code chain using remote params."""
-    experiment = get_params(url=url)
+    status_code, experiment = http.get_params(url=url)
+    if status_code != 200:
+        print('No experiment data!')
+        return
 
     channel_type = experiment.pop('channel_type')
     code_id = experiment.pop('code_id')
@@ -87,7 +89,7 @@ def simulate_from_params(url: str):
         result_log += f', I = {experiment["I"]}'
     print(result_log)
 
-    resp = save_result(
+    resp = http.save_result(
         url=url,
         result=result,
         code_id=code_id,

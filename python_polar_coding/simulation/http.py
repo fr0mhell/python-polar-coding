@@ -2,6 +2,7 @@ import requests
 
 
 def prepare(url, snr_range, required_messages,
+            per_experiment=1000,
             code_types=None,
             code_lengths=None):
     params = {
@@ -9,6 +10,7 @@ def prepare(url, snr_range, required_messages,
         'code_lengths': code_lengths,
         'snr_range': snr_range,
         'required_messages': required_messages,
+        'per_experiment': per_experiment,
     }
     try:
         return requests.post(f'{url}/prepare', json=params)
@@ -19,7 +21,7 @@ def prepare(url, snr_range, required_messages,
 def get_params(url):
     try:
         resp = requests.put(f'{url}/get-params', json={})
-        return resp.json()
+        return resp.status_code, resp.json()
     except Exception as e:
         print(e)
 
