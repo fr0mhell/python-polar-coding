@@ -5,7 +5,12 @@ from .decoders.rc_scan_decoder import RCSCANDecoder
 
 
 class RCSCANPolarCode(BasicPolarCode):
-    """Polar code with RC-SCAN decoding algorithm."""
+    """Polar code with RC-SCAN decoding algorithm.
+
+    Based on: https://arxiv.org/pdf/1510.06495.pdf,
+    DOI: 10.1109/DASIP.2015.7367252
+
+    """
     decoder_class = RCSCANDecoder
 
     def __init__(self, N: int, K: int,

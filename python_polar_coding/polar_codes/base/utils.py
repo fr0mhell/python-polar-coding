@@ -55,3 +55,9 @@ def upperconv(llr1: float, llr2: float) -> float:
 
     """
     return logdomain_sum(llr1 + llr2, 0) - logdomain_sum(llr1, llr2)
+
+
+def splits(start, end):
+    while start <= end:
+        yield start
+        start *= 2
