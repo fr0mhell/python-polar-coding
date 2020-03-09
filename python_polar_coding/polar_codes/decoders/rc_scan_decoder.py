@@ -33,7 +33,7 @@ class RCSCANNode(FastSSCNode):
         if self._node_type == RCSCANNode.ONE_NODE:
             self._beta = self._compute_one_node_beta(self.alpha)
 
-    def _get_node_type(self):
+    def get_node_type(self):
         """Get the type of RC SCAN Node.
 
         * Zero node - [0, 0, 0, 0, 0, 0, 0, 0];
