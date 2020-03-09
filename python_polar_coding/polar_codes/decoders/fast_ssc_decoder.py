@@ -1,8 +1,7 @@
-import numba
 import numpy as np
 from anytree import Node, PreOrderIter
 
-from ..base.functions import make_hard_decision
+from ..base import functions
 from .sc_decoder import SCDecoder
 
 
@@ -22,9 +21,9 @@ class FastSSCNode(Node):
     # Minimal size of Single parity check node
     SPC_MIN_SIZE = 4
     # Minimal size of Repetition Fast SSC Node
-    REPETITION_MIN_SIZE = 2
+    REPETITION_MIN_SIZE = 4
 
-    def __init__(self, mask, name=ROOT, code_min_size=None, **kwargs):
+    def __init__(self, mask, name=ROOT, N_min=None, **kwargs):
         """A node of Fast SSC decoder."""
         if name not in self.__class__.NODE_NAMES:
             raise ValueError('Wrong Fast SSC Node type')
@@ -32,8 +31,8 @@ class FastSSCNode(Node):
         super().__init__(name, **kwargs)
 
         self._mask = mask
-        self._code_min_size = code_min_size
-        self._node_type = self._get_node_type()
+        self.N_min = N_min
+        self._node_type = self.get_node_type()
         self._alpha = np.zeros(self.N, dtype=np.double)
         self._beta = np.zeros(self.N, dtype=np.int8)
 
@@ -47,7 +46,7 @@ class FastSSCNode(Node):
     @property
     def M(self):
         """Minimal size of component polar code."""
-        return self._code_min_size
+        return self.N_min
 
     @property
     def alpha(self):
@@ -110,34 +109,17 @@ class FastSSCNode(Node):
         if self._node_type == FastSSCNode.ZERO_NODE:
             self._beta = np.zeros(self.N, dtype=np.int8)
         if self._node_type == FastSSCNode.ONE_NODE:
-            self._beta = make_hard_decision(self.alpha)
+            self._beta = functions.make_hard_decision(self.alpha)
         if self._node_type == FastSSCNode.SINGLE_PARITY_CHECK:
-            self._beta = self._compute_bits_spc(self.alpha)
+            self._beta = functions.compute_single_parity_check(self.alpha)
         if self._node_type == FastSSCNode.REPETITION:
-            self._beta = self._compute_bits_repetition(self.alpha)
+            self._beta = functions.compute_repetition(self.alpha)
 
     def _initialize_beta(self):
         """Initialize BETA values on tree building."""
         return np.zeros(self.N, dtype=np.int8)
 
-    @staticmethod
-    @numba.njit
-    def _compute_bits_spc(llr):
-        bits = np.array([l < 0 for l in llr], dtype=np.int8)
-        parity = np.sum(bits) % 2
-        arg_min = np.abs(llr).argmin()
-        bits[arg_min] = (bits[arg_min] + parity) % 2
-        return bits
-
-    @staticmethod
-    @numba.njit
-    def _compute_bits_repetition(llr):
-        return (
-            np.zeros(llr.size, dtype=np.int8) if np.sum(llr) >= 0
-            else np.ones(llr.size, dtype=np.int8)
-        )
-
-    def _get_node_type(self):
+    def get_node_type(self):
         """Get the type of Fast SSC Node.
 
         * Zero node - [0, 0, 0, 0, 0, 0, 0, 0];
@@ -148,17 +130,27 @@ class FastSSCNode(Node):
         Or other type.
 
         """
-        if np.all(self._mask == 0) and self._mask.size >= self.zero_min_size:
+        if self._check_is_zero(self._mask) and self.N >= self.zero_min_size:
             return FastSSCNode.ZERO_NODE
-        if np.all(self._mask == 1) and self._mask.size >= self.one_min_size:
+        if self._check_is_one(self._mask) and self.N >= self.one_min_size:
             return FastSSCNode.ONE_NODE
-        if (self._mask.size >= self.spc_min_size
-                and self._mask[0] == 0 and np.sum(self._mask) == self.N - 1):
+        if self.N >= self.spc_min_size and self._check_is_spc(self._mask):
             return FastSSCNode.SINGLE_PARITY_CHECK
-        if (self._mask.size >= self.repetition_min_size
-                and self._mask[-1] == 1 and np.sum(self._mask) == 1):
+        if self.N >= self.repetition_min_size and self._check_is_parity(self._mask):  # noqa
             return FastSSCNode.REPETITION
         return FastSSCNode.OTHER
+
+    def _check_is_one(self, mask):
+        return np.all(mask == 1)
+
+    def _check_is_zero(self, mask):
+        return np.all(mask == 0)
+
+    def _check_is_spc(self, mask):
+        return mask[0] == 0 and np.sum(mask) == mask.size - 1
+
+    def _check_is_parity(self, mask):
+        return mask[-1] == 1 and np.sum(mask) == 1
 
     def _build_decoding_tree(self):
         """Build Fast SSC decoding tree."""
