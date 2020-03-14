@@ -13,3 +13,7 @@ class FastSSCPolarCode(BasicPolarCode):
     def get_decoder(self):
         return self.decoder_class(n=self.n, mask=self.mask,
                                   is_systematic=self.is_systematic)
+
+    @property
+    def tree(self):
+        return self.decoder._decoding_tree

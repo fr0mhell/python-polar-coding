@@ -21,7 +21,7 @@ class FastSSCNode(Node):
     # Minimal size of Single parity check node
     SPC_MIN_SIZE = 4
     # Minimal size of Repetition Fast SSC Node
-    REPETITION_MIN_SIZE = 4
+    REPETITION_MIN_SIZE = 2
 
     def __init__(self, mask, name=ROOT, N_min=None, **kwargs):
         """A node of Fast SSC decoder."""

@@ -15,12 +15,12 @@ A package for modelling Polar codes.
 
 **Decoding:**
 - [x] SC Decoding;
-- [x] [SC List Decoding](https://arxiv.org/abs/1206.0050);
-- [ ] [SC Stack Decoding](https://ieeexplore.ieee.org/document/6215306/?denied=);
+- [x] [SC LIST Decoding](https://arxiv.org/abs/1206.0050);
+- [ ] [SC STACK Decoding](https://ieeexplore.ieee.org/document/6215306/?denied=);
 - [x] [Fast SSC Decoding](https://arxiv.org/abs/1307.7154);
-- [ ] [Fast SSC List Decoding]();
 - [x] [RC SCAN Decoding]();
-- [ ] [Sphere List Decoding]();
+- [x] [Generalized Fast SSC Decoding](https://arxiv.org/pdf/1804.09508.pdf);
+- [ ] [Generalized Fast SSC LIST Decoding](https://arxiv.org/pdf/1804.09508.pdf);
 
 **Modulation:**
 
