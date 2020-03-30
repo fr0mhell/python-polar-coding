@@ -1,3 +1,7 @@
+## 0.2.1
+
+Fix issues with decoding tree of `FastSSCDecoder` and `GeneralizedFastSSCDecoder`
+
 ## 0.2.0
 
 Add implementation of [Generalized Fast SSC Decoding](https://arxiv.org/pdf/1804.09508.pdf).

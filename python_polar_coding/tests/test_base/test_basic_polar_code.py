@@ -2,10 +2,12 @@ from unittest import TestCase
 
 import numpy as np
 
-from ...polar_codes.base.decoder import BaseDecoder
-from ...polar_codes.base.functions import make_hard_decision
-from ...polar_codes.base.polar_code import (BasicPolarCode,
-                                            BasicPolarCodeWithCRC)
+from python_polar_coding.polar_codes.base.decoder import BaseDecoder
+from python_polar_coding.polar_codes.base.functions import make_hard_decision
+from python_polar_coding.polar_codes.base.polar_code import (
+    BasicPolarCode,
+    BasicPolarCodeWithCRC,
+)
 
 
 class SimpleDecoder(BaseDecoder):

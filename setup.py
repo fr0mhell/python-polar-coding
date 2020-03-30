@@ -12,7 +12,7 @@ requirements = parse_requirements(
 
 setuptools.setup(
     name='python-polar-coding',
-    version='0.2.0',
+    version='0.2.1',
     author='Grigory Timofeev',
     author_email='t1m0feev.grigorij@gmail.com',
     description='Polar coding implementation in Python',

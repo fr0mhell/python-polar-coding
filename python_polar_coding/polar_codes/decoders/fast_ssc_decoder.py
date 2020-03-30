@@ -161,10 +161,9 @@ class FastSSCNode(Node):
             return
 
         left_mask, right_mask = np.split(self._mask, 2)
-        self.__class__(mask=left_mask, name=self.LEFT, code_min_size=self.M,
-                       parent=self)
-        self.__class__(mask=right_mask, name=self.RIGHT, code_min_size=self.M,
-                       parent=self)
+        cls = self.__class__
+        cls(mask=left_mask, name=self.LEFT, N_min=self.M, parent=self)
+        cls(mask=right_mask, name=self.RIGHT, N_min=self.M, parent=self)
 
 
 class FastSSCDecoder(SCDecoder):
@@ -178,7 +177,7 @@ class FastSSCDecoder(SCDecoder):
         super().__init__(n=n, mask=mask, is_systematic=is_systematic)
         self._decoding_tree = self.node_class(
             mask=self.mask,
-            code_min_size=code_min_size,
+            N_min=code_min_size,
         )
         self._position = 0
 

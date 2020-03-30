@@ -36,7 +36,7 @@ class GeneralizedFastSSCPolarCode(FastSSCPolarCode):
 
     def to_dict(self):
         d = super().to_dict()
-        d.update({'Ns': self.decoder.M})
+        d.update({'AF': self.AF})
         return d
 
     def show_tree(self):
