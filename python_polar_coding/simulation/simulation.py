@@ -4,7 +4,11 @@ from typing import Dict
 
 from ..channels import SimpleAWGNChannel
 from ..modems import SimpleBPSKModem
-from ..polar_codes import FastSSCPolarCode, RCSCANPolarCode
+from ..polar_codes import (
+    FastSSCPolarCode,
+    GeneralizedFastSSCPolarCode,
+    RCSCANPolarCode,
+)
 from . import functions, http
 
 
@@ -12,6 +16,7 @@ class CodeTypes:
     """Code types"""
     FAST_SSC = 'fast-ssc'
     RC_SCAN = 'rc_scan'
+    G_FAST_SSC = 'g-fast-ssc'
     ALL = [FAST_SSC, RC_SCAN]
 
 
@@ -22,6 +27,7 @@ class ChannelTypes:
 CODE_MAP = {
     CodeTypes.FAST_SSC: FastSSCPolarCode,
     CodeTypes.RC_SCAN: RCSCANPolarCode,
+    CodeTypes.G_FAST_SSC: GeneralizedFastSSCPolarCode,
 }
 
 

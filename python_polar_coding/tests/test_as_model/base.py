@@ -5,7 +5,7 @@ from python_polar_coding.channels.simple import SimpleBPSKModulationAWGN
 
 class BasicVerifyPolarCode:
     """Provides simple BPSK modulator for polar codes testing."""
-    messages = 100
+    messages = 1000
     polar_code_class = None
     channel_class = SimpleBPSKModulationAWGN
     code_parameters = None
