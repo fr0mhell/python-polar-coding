@@ -4,14 +4,15 @@ from typing import Union
 
 import numpy as np
 
-from . import crc, encoder, pcc, utils
+from . import encoder
+from python_polar_coding.polar_codes import utils, crc, pcc
 
 
-class BasicPolarCode(metaclass=abc.ABCMeta):
-    """Basic Polar code class.
+class BasePolarCodec(metaclass=abc.ABCMeta):
+    """Basic codec for Polar code.
 
     Includes code construction.
-    Provides the basic workflow for encoding and decoding.
+    Defines the basic workflow for encoding and decoding.
 
     Supports creation of a polar code from custom mask.
 
@@ -47,8 +48,8 @@ class BasicPolarCode(metaclass=abc.ABCMeta):
             N=self.N, n=self.n, design_snr=design_snr, pcc_method=pcc_method)
         self.mask = self._polar_code_construction(mask)
 
-        self.encoder = self.get_encoder()
-        self.decoder = self.get_decoder()
+        self.encoder = self.init_encoder()
+        self.decoder = self.init_decoder()
 
     def __str__(self):
         return (f'({self.N}, {self.K}) Polar code.\n'
@@ -67,13 +68,13 @@ class BasicPolarCode(metaclass=abc.ABCMeta):
             'mask': ''.join(str(m) for m in self.mask),
         }
 
-    def get_encoder(self):
+    def init_encoder(self):
         """Get Polar Encoder instance."""
         return self.encoder_class(mask=self.mask, n=self.n,
                                   is_systematic=self.is_systematic)
 
     @abc.abstractmethod
-    def get_decoder(self):
+    def init_decoder(self):
         """Get Polar Decoder instance."""
 
     def encode(self, message: np.array) -> np.array:
@@ -132,7 +133,7 @@ class BasicPolarCode(metaclass=abc.ABCMeta):
         return np.array([m[2] for m in mask])
 
 
-class BasicPolarCodeWithCRC(BasicPolarCode):
+class BasePolarCodeWithCRC(BasePolarCodec):
     """Basic Polar code class with CRC support.
 
     Provides the support of CRC 16 and CRC 32.
@@ -145,7 +146,7 @@ class BasicPolarCodeWithCRC(BasicPolarCode):
                  is_systematic: bool = True,
                  crc_size: int = 32,
                  mask: Union[str, None] = None,
-                 pcc_method: str = BasicPolarCode.BHATTACHARYYA):
+                 pcc_method: str = BasePolarCodec.BHATTACHARYYA):
 
         assert crc_size in [16, 32], f'Unsupported CRC size ({crc_size})'
         assert K + crc_size < N, (f'Cannot create Polar code with N = {N},'
@@ -167,7 +168,7 @@ class BasicPolarCodeWithCRC(BasicPolarCode):
         d.update({'crc_size': self.crc_size})
         return d
 
-    def get_encoder(self):
+    def init_encoder(self):
         """Get Polar Encoder instance."""
         return self.encoder_class(mask=self.mask, n=self.n,
                                   is_systematic=self.is_systematic,

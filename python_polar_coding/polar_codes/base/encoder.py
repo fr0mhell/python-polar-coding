@@ -1,7 +1,7 @@
 import numpy as np
 from numba import njit
 
-from .crc import CRC
+from python_polar_coding.polar_codes.crc import CRC
 
 
 class Encoder:

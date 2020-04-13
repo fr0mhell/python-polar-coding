@@ -20,7 +20,7 @@ def compute_encoding_step(level, n, source, result):
 
 
 @numba.njit
-def basic_llr_computation(a, b):
+def compute_alpha(a, b):
     """Basic function to compute intermediate LLR values."""
     c = np.zeros(a.shape[0])
     for i in range(c.shape[0]):
@@ -35,7 +35,7 @@ def function_1(a, b, c):
     Source: doi:10.1007/s12243-018-0634-7, formula 1.
 
     """
-    return basic_llr_computation(a, b + c)
+    return compute_alpha(a, b + c)
 
 
 @numba.njit
@@ -45,7 +45,7 @@ def function_2(a, b, c):
     Source: doi:10.1007/s12243-018-0634-7, formula 2.
 
     """
-    return basic_llr_computation(a, b) + c
+    return compute_alpha(a, b) + c
 
 
 @numba.njit

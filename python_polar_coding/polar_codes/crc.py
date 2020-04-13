@@ -2,7 +2,7 @@ import numpy as np
 from PyCRC.CRC32 import CRC32
 from PyCRC.CRCCCITT import CRCCCITT
 
-from . import utils
+from python_polar_coding.polar_codes import utils
 
 
 class CRC:
