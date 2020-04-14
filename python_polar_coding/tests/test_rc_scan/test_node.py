@@ -2,8 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from python_polar_coding.polar_codes.decoders.rc_scan_decoder import (
-    INFINITY, RCSCANNode)
+from python_polar_coding.polar_codes.rc_scan import INFINITY, RCSCANNode
 
 
 class TestRCSCANNode(TestCase):

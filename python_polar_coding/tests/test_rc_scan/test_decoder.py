@@ -2,8 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from python_polar_coding.polar_codes.decoders import RCSCANDecoder
-from python_polar_coding.polar_codes.decoders.rc_scan_decoder import INFINITY
+from python_polar_coding.polar_codes.rc_scan import INFINITY, RCSCANDecoder
 
 
 class TestRCSCANDecoder(TestCase):
@@ -18,7 +17,7 @@ class TestRCSCANDecoder(TestCase):
 
     def test_zero_node_decoder(self):
         mask = np.zeros(self.length, dtype=np.int8)
-        decoder = RCSCANDecoder(mask=mask, is_systematic=True, n=self.n)
+        decoder = RCSCANDecoder(mask=mask, n=self.n)
         decoder.decode(self.received_llr)
 
         self.assertEqual(len(decoder._decoding_tree.leaves), 1)
@@ -29,7 +28,7 @@ class TestRCSCANDecoder(TestCase):
 
     def test_one_node_decoder(self):
         mask = np.ones(self.length, dtype=np.int8)
-        decoder = RCSCANDecoder(mask=mask, is_systematic=True, n=self.n)
+        decoder = RCSCANDecoder(mask=mask, n=self.n)
         decoder.decode(self.received_llr)
 
         self.assertEqual(len(decoder._decoding_tree.leaves), 1)
@@ -59,7 +58,7 @@ class TestRCSCANDecoderComplex(TestCase):
         ]
 
     def _get_decoder(self):
-        return RCSCANDecoder(mask=self.mask, is_systematic=True, n=self.n)
+        return RCSCANDecoder(mask=self.mask, n=self.n)
 
     def test_sub_codes(self):
         """Check sub-codes built correctly."""
