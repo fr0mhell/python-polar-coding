@@ -1,8 +1,9 @@
-from .base.polar_code import BasicPolarCode
-from .decoders.fast_ssc_decoder import FastSSCDecoder
+from python_polar_coding.polar_codes.base import BasePolarCodec
+
+from .decoder import FastSSCDecoder
 
 
-class FastSSCPolarCode(BasicPolarCode):
+class FastSSCPolarCodec(BasePolarCodec):
     """Polar code with SC decoding algorithm.
 
     Based on: https://arxiv.org/pdf/1307.7154.pdf
@@ -10,7 +11,7 @@ class FastSSCPolarCode(BasicPolarCode):
     """
     decoder_class = FastSSCDecoder
 
-    def get_decoder(self):
+    def init_decoder(self):
         return self.decoder_class(n=self.n, mask=self.mask,
                                   is_systematic=self.is_systematic)
 

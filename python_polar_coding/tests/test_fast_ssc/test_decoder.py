@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from python_polar_coding.polar_codes.decoders import FastSSCDecoder
+from python_polar_coding.polar_codes.fast_ssc import FastSSCDecoder
 
 
 class TestFastSSCDecoder(TestCase):
