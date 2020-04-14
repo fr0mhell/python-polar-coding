@@ -1,11 +1,12 @@
 import abc
-from operator import itemgetter
 from typing import Union
+from operator import itemgetter
 
 import numpy as np
 
+from python_polar_coding.polar_codes import crc, pcc, utils
+
 from . import encoder
-from python_polar_coding.polar_codes import utils, crc, pcc
 
 
 class BasePolarCodec(metaclass=abc.ABCMeta):
@@ -133,7 +134,7 @@ class BasePolarCodec(metaclass=abc.ABCMeta):
         return np.array([m[2] for m in mask])
 
 
-class BasePolarCodeWithCRC(BasePolarCodec):
+class BaseCRCPolarCodec(BasePolarCodec):
     """Basic Polar code class with CRC support.
 
     Provides the support of CRC 16 and CRC 32.

@@ -1,11 +1,10 @@
 import numba
 import numpy as np
 
-from ..base.decoder import BaseDecoder
-from ..base.functions import compute_encoding_step
+from ..base import decoder, functions
 
 
-class SCDecoder(BaseDecoder):
+class SCDecoder(decoder.BaseDecoder):
     """Implements SC decoding algorithm.
 
     Stores initial and intermediate LLR values, intermediate bit values and
@@ -134,7 +133,7 @@ class SCDecoder(BaseDecoder):
             source = self.intermediate_bits[i + 1]
             result = self.intermediate_bits[i]
 
-            self.intermediate_bits[i] = compute_encoding_step(
+            self.intermediate_bits[i] = functions.compute_encoding_step(
                 i, self.n, source, result
             )
 

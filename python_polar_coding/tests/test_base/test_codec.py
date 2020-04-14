@@ -2,11 +2,11 @@ from unittest import TestCase
 
 import numpy as np
 
-from python_polar_coding.polar_codes.base.decoder import BaseDecoder
-from python_polar_coding.polar_codes.base.functions import make_hard_decision
-from python_polar_coding.polar_codes.base.polar_code import (
-    BasicPolarCode,
-    BasicPolarCodeWithCRC,
+from python_polar_coding.polar_codes.base import (
+    BaseCRCPolarCodec,
+    BaseDecoder,
+    BasePolarCodec,
+    make_hard_decision,
 )
 
 
@@ -16,21 +16,21 @@ class SimpleDecoder(BaseDecoder):
         return make_hard_decision(received_llr)
 
 
-class SimplePC(BasicPolarCode):
+class SimplePC(BasePolarCodec):
     """Simple polar code for testing."""
     decoder_class = SimpleDecoder
 
-    def get_decoder(self):
+    def init_decoder(self):
         return self.decoder_class(
             n=self.n, mask=self.mask, is_systematic=self.is_systematic
         )
 
 
-class SimplePCCRC(BasicPolarCodeWithCRC):
+class SimplePCCRC(BaseCRCPolarCodec):
     """Simple polar code with CRC support for testing."""
     decoder_class = SimpleDecoder
 
-    def get_decoder(self):
+    def init_decoder(self):
         return self.decoder_class(
             n=self.n, mask=self.mask, is_systematic=self.is_systematic
         )
