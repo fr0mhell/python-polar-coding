@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from python_polar_coding.polar_codes.decoders import SCListDecoder
+from python_polar_coding.polar_codes.sc_list import SCListDecoder
 
 
 class TestSCListDecoder(TestCase):

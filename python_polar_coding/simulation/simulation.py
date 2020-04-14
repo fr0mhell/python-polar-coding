@@ -1,6 +1,6 @@
 import multiprocessing
-from concurrent import futures
 from typing import Dict
+from concurrent import futures
 
 from ..channels import SimpleAWGNChannel
 from ..modems import SimpleBPSKModem
