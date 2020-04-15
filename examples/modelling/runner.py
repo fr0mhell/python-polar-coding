@@ -1,10 +1,12 @@
 import multiprocessing
-from concurrent import futures
 from datetime import datetime
 from functools import partial
+from concurrent import futures
 
-from examples.modelling.functions import (generate_simulation_parameters,
-                                          simulation_task)
+from examples.modelling.functions import (
+    generate_simulation_parameters,
+    simulation_task,
+)
 from examples.modelling.mongo import DB_NAME
 from python_polar_coding.channels.simple import SimpleBPSKModulationAWGN
 

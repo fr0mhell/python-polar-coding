@@ -1,13 +1,13 @@
 import multiprocessing
-from concurrent import futures
 from typing import Dict
+from concurrent import futures
 
 from ..channels import SimpleAWGNChannel
 from ..modems import SimpleBPSKModem
 from ..polar_codes import (
-    FastSSCPolarCode,
-    GeneralizedFastSSCPolarCode,
-    RCSCANPolarCode,
+    FastSSCPolarCodec,
+    GeneralizedFastSSCPolarCodec,
+    RCSCANPolarCodec,
 )
 from . import functions, http
 
@@ -25,9 +25,9 @@ class ChannelTypes:
 
 
 CODE_MAP = {
-    CodeTypes.FAST_SSC: FastSSCPolarCode,
-    CodeTypes.RC_SCAN: RCSCANPolarCode,
-    CodeTypes.G_FAST_SSC: GeneralizedFastSSCPolarCode,
+    CodeTypes.FAST_SSC: FastSSCPolarCodec,
+    CodeTypes.RC_SCAN: RCSCANPolarCodec,
+    CodeTypes.G_FAST_SSC: GeneralizedFastSSCPolarCodec,
 }
 
 

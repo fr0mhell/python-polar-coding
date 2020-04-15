@@ -1,1 +1,1 @@
-from .simple import SimpleAWGNChannel
+from .simple import SimpleAWGNChannel, SimpleBPSKModulationAWGN

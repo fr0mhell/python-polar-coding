@@ -1,6 +1,6 @@
-from datetime import datetime
 from math import ceil
 from random import shuffle
+from datetime import datetime
 
 import numpy as np
 from pymongo import MongoClient
