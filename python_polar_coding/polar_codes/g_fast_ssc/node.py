@@ -1,13 +1,9 @@
 import numpy as np
 
-from ..base import functions
-from .fast_ssc_decoder import FastSSCDecoder, FastSSCNode
+from python_polar_coding.polar_codes.fast_ssc import FastSSCNode
+from python_polar_coding.polar_codes.utils import splits
 
-
-def splits(start, end):
-    while start <= end:
-        yield start
-        start *= 2
+from .functions import compute_g_repetition, compute_rg_parity
 
 
 class GeneralizedFastSSCNode(FastSSCNode):
@@ -114,30 +110,15 @@ class GeneralizedFastSSCNode(FastSSCNode):
         klass = self.__class__
 
         if self._node_type == klass.G_REPETITION:
-            self._beta = functions.compute_g_repetition(
+            self._beta = compute_g_repetition(
                 llr=self.alpha,
                 mask_steps=self.mask_steps,
                 last_chunk_type=self.last_chunk_type,
                 N=self.N,
             )
         if self._node_type == klass.RG_PARITY:
-            self._beta = functions.compute_rg_parity(
+            self._beta = compute_rg_parity(
                 llr=self.alpha,
                 mask_steps=self.mask_steps,
                 N=self.N,
             )
-
-
-class GeneralizedFastSSCDecoder(FastSSCDecoder):
-    node_class = GeneralizedFastSSCNode
-
-    def __init__(self, n: int,
-                 mask: np.array,
-                 is_systematic: bool = True,
-                 code_min_size: int = 0,
-                 AF: int = 1):
-        super().__init__(n=n, mask=mask, is_systematic=is_systematic)
-        self._decoding_tree = self.node_class(mask=self.mask,
-                                              N_min=code_min_size,
-                                              AF=AF)
-        self._position = 0

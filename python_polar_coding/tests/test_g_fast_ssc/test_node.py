@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from python_polar_coding.polar_codes.decoders import GeneralizedFastSSCNode
+from python_polar_coding.polar_codes.g_fast_ssc import GeneralizedFastSSCNode
 
 
 class GeneralizedFastSSCNodeTest(TestCase):

@@ -1,10 +1,11 @@
 from typing import Union
 
-from .decoders.g_fast_ssc_decoder import GeneralizedFastSSCDecoder
-from .fast_ssc import FastSSCPolarCode
+from python_polar_coding.polar_codes.fast_ssc import FastSSCPolarCodec
+
+from .decoder import GeneralizedFastSSCDecoder
 
 
-class GeneralizedFastSSCPolarCode(FastSSCPolarCode):
+class GeneralizedFastSSCPolarCodec(FastSSCPolarCodec):
     """Generalized Fast SSC code.
 
     Based on: https://arxiv.org/pdf/1804.09508.pdf
@@ -12,13 +13,17 @@ class GeneralizedFastSSCPolarCode(FastSSCPolarCode):
     """
     decoder_class = GeneralizedFastSSCDecoder
 
-    def __init__(self, N: int, K: int,
-                 design_snr: float = 0.0,
-                 is_systematic: bool = True,
-                 mask: Union[str, None] = None,
-                 pcc_method: str = FastSSCPolarCode.BHATTACHARYYA,
-                 Ns: int = 1,
-                 AF: int = 1):
+    def __init__(
+            self,
+            N: int,
+            K: int,
+            design_snr: float = 0.0,
+            is_systematic: bool = True,
+            mask: Union[str, None] = None,
+            pcc_method: str = FastSSCPolarCodec.BHATTACHARYYA,
+            Ns: int = 1,
+            AF: int = 1,
+    ):
 
         self.Ns = Ns
         self.AF = AF
@@ -28,7 +33,7 @@ class GeneralizedFastSSCPolarCode(FastSSCPolarCode):
                          mask=mask,
                          pcc_method=pcc_method)
 
-    def get_decoder(self):
+    def init_decoder(self):
         return self.decoder_class(n=self.n, mask=self.mask,
                                   is_systematic=self.is_systematic,
                                   code_min_size=self.Ns,
@@ -38,11 +43,3 @@ class GeneralizedFastSSCPolarCode(FastSSCPolarCode):
         d = super().to_dict()
         d.update({'AF': self.AF})
         return d
-
-    def show_tree(self):
-        nodes = [
-            (f'{leaf.name}, {leaf._node_type}, {leaf.N}: '
-             f'{"".join([str(m) for m in leaf._mask])}')
-            for leaf in self.tree.leaves
-        ]
-        return '\n'.join(nodes)
