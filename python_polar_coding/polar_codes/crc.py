@@ -36,6 +36,8 @@ class CRC:
     def check_crc(self, message: np.array) -> bool:
         """Check if message has errors or not using CRC."""
         received_crc = int(
-            ''.join([str(m) for m in message[-self.crc_size::]]), 2)
+            ''.join([str(m) for m in message[-self.crc_size::]]),
+            2
+        )
         check_crc = self._compute_crc(message[:-self.crc_size])
         return received_crc == check_crc
