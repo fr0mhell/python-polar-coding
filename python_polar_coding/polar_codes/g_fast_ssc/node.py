@@ -27,9 +27,9 @@ class GeneralizedFastSSCNode(FastSSCNode):
         ntype = super().get_node_type()
         if ntype != self.OTHER:
             return ntype
-        if self._check_is_g_repetition():
+        if self._check_is_g_repetition(self._mask):
             return self.G_REPETITION
-        if self._check_is_rg_parity():
+        if self._check_is_rg_parity(self._mask):
             return self.RG_PARITY
         return self.OTHER
 
@@ -46,7 +46,7 @@ class GeneralizedFastSSCNode(FastSSCNode):
         cls(mask=left_mask, name=self.LEFT, N_min=self.M, parent=self, AF=self.AF)
         cls(mask=right_mask, name=self.RIGHT, N_min=self.M, parent=self, AF=self.AF)
 
-    def _check_is_g_repetition(self):
+    def _check_is_g_repetition(self, mask):
         """Check the node is Generalized Repetition node.
 
         Based on: https://arxiv.org/pdf/1804.09508.pdf, Section III, A.
@@ -54,7 +54,7 @@ class GeneralizedFastSSCNode(FastSSCNode):
         """
         # 1. Split mask into T chunks, T in range [2, 4, ..., N/2]
         for t in splits(self.MIN_CHUNKS, self.N // 2):
-            chunks = np.split(self._mask, t)
+            chunks = np.split(mask, t)
 
             last = chunks[-1]
             last_ok = (
@@ -74,7 +74,7 @@ class GeneralizedFastSSCNode(FastSSCNode):
 
         return False
 
-    def _check_is_rg_parity(self):
+    def _check_is_rg_parity(self, mask):
         """Check the node is Relaxed Generalized Parity Check node.
 
         Based on: https://arxiv.org/pdf/1804.09508.pdf, Section III, B.
@@ -82,7 +82,7 @@ class GeneralizedFastSSCNode(FastSSCNode):
         """
         # 1. Split mask into T chunks, T in range [2, 4, ..., N/2]
         for t in splits(self.MIN_CHUNKS, self.N // 2):
-            chunks = np.split(self._mask, t)
+            chunks = np.split(mask, t)
 
             first = chunks[0]
             if not self._check_is_zero(first):

@@ -43,7 +43,7 @@ for snr in snr_range:
     for _ in range(messages):
         msg = generate_binary_message(size=K)
         encoded = codec.encode(msg)
-        transmitted = bpsk.transmit(message=msg, snr_db=snr)
+        transmitted = bpsk.transmit(message=encoded, snr_db=snr)
         decoded = codec.decode(transmitted)
 
         bit_errors, frame_error = compute_fails(msg, decoded)

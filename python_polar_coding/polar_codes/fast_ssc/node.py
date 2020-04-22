@@ -40,6 +40,9 @@ class FastSSCNode(Node):
         self.is_computed = False
         self._build_decoding_tree()
 
+    def __str__(self):
+        return ''.join([str(m) for m in self._mask])
+
     @property
     def N(self):
         return self._mask.size
@@ -135,10 +138,10 @@ class FastSSCNode(Node):
             return FastSSCNode.ZERO_NODE
         if self._check_is_one(self._mask) and self.N >= self.one_min_size:
             return FastSSCNode.ONE_NODE
-        if self.N >= self.spc_min_size and self._check_is_spc(self._mask):
-            return FastSSCNode.SINGLE_PARITY_CHECK
         if self.N >= self.repetition_min_size and self._check_is_parity(self._mask):  # noqa
             return FastSSCNode.REPETITION
+        if self.N >= self.spc_min_size and self._check_is_spc(self._mask):
+            return FastSSCNode.SINGLE_PARITY_CHECK
         return FastSSCNode.OTHER
 
     def _check_is_one(self, mask):

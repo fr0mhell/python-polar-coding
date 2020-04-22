@@ -10,10 +10,13 @@ class FastSSCDecoder(SCDecoder):
     """Implements Fast SSC decoding algorithm."""
     node_class = FastSSCNode
 
-    def __init__(self, n: int,
-                 mask: np.array,
-                 is_systematic: bool = True,
-                 code_min_size: int = 0):
+    def __init__(
+            self,
+            n: int,
+            mask: np.array,
+            is_systematic: bool = True,
+            code_min_size: int = 0,
+    ):
         super().__init__(n=n, mask=mask, is_systematic=is_systematic)
         self._decoding_tree = self.node_class(
             mask=self.mask,
