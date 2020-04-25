@@ -5,7 +5,7 @@ from ..base import make_hard_decision
 from ..fast_ssc import compute_single_parity_check
 
 
-@numba.njit
+# @numba.njit
 def compute_g_repetition(llr, mask_steps, last_chunk_type, N):
     """Compute bits for Generalized Repetition node.
 

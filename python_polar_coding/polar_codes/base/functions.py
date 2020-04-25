@@ -32,3 +32,21 @@ def compute_alpha(a, b):
 def make_hard_decision(soft_input):
     """Makes hard decision based on soft input values (LLR)."""
     return np.array([s < 0 for s in soft_input], dtype=np.int8)
+
+
+@numba.njit
+def compute_left_alpha(llr):
+    """Compute Alpha for left node during SC-based decoding."""
+    N = llr.size // 2
+    left = llr[:N]
+    right = llr[N:]
+    return compute_alpha(left, right)
+
+
+@numba.njit
+def compute_right_alpha(llr, left_beta):
+    """Compute Alpha for right node during SC-based decoding."""
+    N = llr.size // 2
+    left = llr[:N]
+    right = llr[N:]
+    return right - (2 * left_beta - 1) * left

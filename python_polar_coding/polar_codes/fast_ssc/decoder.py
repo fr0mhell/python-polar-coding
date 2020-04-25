@@ -2,6 +2,10 @@ import numpy as np
 from anytree import PreOrderIter
 
 from python_polar_coding.polar_codes.sc import SCDecoder
+from python_polar_coding.polar_codes.base.functions import (
+    compute_left_alpha,
+    compute_right_alpha,
+)
 
 from .node import FastSSCNode
 
@@ -18,11 +22,12 @@ class FastSSCDecoder(SCDecoder):
             code_min_size: int = 0,
     ):
         super().__init__(n=n, mask=mask, is_systematic=is_systematic)
-        self._decoding_tree = self.node_class(
-            mask=self.mask,
-            N_min=code_min_size,
-        )
+        self._decoding_tree = self.setup_decoding_tree(code_min_size)
         self._position = 0
+
+    def setup_decoding_tree(self, N_min, **kwargs):
+        """Setup decoding tree."""
+        return self.node_class(mask=self.mask, N_min=N_min)
 
     def _set_initial_state(self, received_llr):
         """Initialize decoder with received message."""
@@ -73,12 +78,12 @@ class FastSSCDecoder(SCDecoder):
             parent_alpha = node.parent.alpha
 
             if node.is_left:
-                node.alpha = self._compute_left_alpha(parent_alpha)
+                node.alpha = compute_left_alpha(parent_alpha)
                 continue
 
             left_node = node.siblings[0]
             left_beta = left_node.beta
-            node.alpha = self._compute_right_alpha(parent_alpha, left_beta)
+            node.alpha = compute_right_alpha(parent_alpha, left_beta)
             node.is_computed = True
 
     def compute_intermediate_beta(self, node):

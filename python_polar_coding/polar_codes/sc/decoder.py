@@ -88,13 +88,13 @@ class SCDecoder(decoder.BaseDecoder):
                 continue
 
             if self.current_state[i - 1] == 0:
-                self.intermediate_llr[i] = self._compute_left_alpha(llr)
+                self.intermediate_llr[i] = functions.compute_left_alpha(llr)
                 continue
 
             end = position
             start = end - np.power(2, self.n - i)
             left_bits = self.intermediate_bits[i][start: end]
-            self.intermediate_llr[i] = self._compute_right_alpha(llr, left_bits)
+            self.intermediate_llr[i] = functions.compute_right_alpha(llr, left_bits)
 
     def _compute_beta(self, position):
         """Make decision about current decoding value."""
