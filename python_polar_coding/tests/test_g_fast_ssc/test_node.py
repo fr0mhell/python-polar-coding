@@ -52,10 +52,10 @@ class GeneralizedFastSSCNodeTest(TestCase):
             GeneralizedFastSSCNode.G_REPETITION,
         )
 
-        expected_result = np.array([0, 0, 0, 1,
-                                    0, 0, 0, 1,
-                                    0, 0, 0, 1,
-                                    0, 0, 0, 1, ])
+        expected_result = np.array([0, 1, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 1, 0, 0, ])
 
         node.alpha = self.llr
         node.compute_leaf_beta()
@@ -75,10 +75,10 @@ class GeneralizedFastSSCNodeTest(TestCase):
             GeneralizedFastSSCNode.G_REPETITION,
         )
 
-        expected_result = np.array([0, 0, 1, 1,
-                                    0, 0, 1, 1,
-                                    0, 0, 1, 1,
-                                    0, 0, 1, 1, ])
+        expected_result = np.array([1, 1, 0, 0,
+                                    1, 1, 0, 0,
+                                    1, 1, 0, 0,
+                                    1, 1, 0, 0, ])
 
         node.alpha = self.llr
         node.compute_leaf_beta()
