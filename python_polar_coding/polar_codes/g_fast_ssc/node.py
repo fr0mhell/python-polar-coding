@@ -23,6 +23,14 @@ class GeneralizedFastSSCNode(FastSSCNode):
         self.mask_steps = None
         super().__init__(*args, **kwargs)
 
+    @property
+    def is_g_repetition(self):
+        return self._node_type == self.G_REPETITION
+
+    @property
+    def is_rg_parity(self):
+        return self._node_type == self.RG_PARITY
+
     def get_node_type(self):
         ntype = super().get_node_type()
         if ntype != self.OTHER:

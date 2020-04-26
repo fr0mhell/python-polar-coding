@@ -16,10 +16,14 @@ class GeneralizedFastSSCDecoder(FastSSCDecoder):
             code_min_size: int = 0,
             AF: int = 1,
     ):
-        super().__init__(n=n, mask=mask, is_systematic=is_systematic)
-        self._decoding_tree = self.node_class(
-            mask=self.mask,
-            N_min=code_min_size,
-            AF=AF,
+        self.AF = AF
+        super().__init__(
+            n=n,
+            mask=mask,
+            is_systematic=is_systematic,
+            code_min_size=code_min_size,
         )
-        self._position = 0
+
+    def setup_decoding_tree(self, N_min, **kwargs):
+        """Setup decoding tree."""
+        return self.node_class(mask=self.mask, N_min=N_min, AF=self.AF)
