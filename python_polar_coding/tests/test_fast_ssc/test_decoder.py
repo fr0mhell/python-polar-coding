@@ -169,9 +169,9 @@ class TestFastSSCDecoder(TestCase):
             np.array([-0.8674, 0.9677, ]),
             np.array([-0.7723, 1.8675, -0.2039, -2.5321, ]),
             np.array([-0.2514, ]),
-            np.array([0.8554, ]),
+            np.array([0, ]),
             np.array([-1.2404, ]),
-            np.array([2.9912, ]),
+            np.array([0, ]),
             np.array([-2.3952, -1.3818, 4.7891, -6.4949, ]),
         ]
 

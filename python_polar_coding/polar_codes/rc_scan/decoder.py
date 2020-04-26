@@ -54,10 +54,9 @@ class RCSCANDecoder(FastSSCDecoder):
     def compute_intermediate_alpha(self, leaf):
         """Compute intermediate Alpha values (LLR)."""
         for node in leaf.path[1:]:
-            if node.is_computed or node.is_leaf:
+            if node.is_computed or node.is_zero or node.is_one:
                 continue
 
-            node.is_computed = True
             parent_alpha = node.parent.alpha
 
             if node.is_left:
@@ -67,6 +66,8 @@ class RCSCANDecoder(FastSSCDecoder):
             if node.is_right:
                 left_beta = node.siblings[0].beta
                 node.alpha = self.compute_right_alpha(parent_alpha, left_beta)
+
+            node.is_computed = True
 
     def compute_intermediate_beta(self, node):
         """Compute intermediate BETA values."""

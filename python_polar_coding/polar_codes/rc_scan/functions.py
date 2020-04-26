@@ -1,6 +1,7 @@
 import numba
+import numpy as np
 
-from ..base import compute_alpha
+from ..base import INFINITY, compute_alpha
 
 
 @numba.njit
@@ -21,3 +22,23 @@ def function_2(a, b, c):
 
     """
     return compute_alpha(a, b) + c
+
+
+@numba.njit
+def compute_beta_zero_node(alpha):
+    """Compute beta values for ZERO node.
+
+    https://arxiv.org/pdf/1510.06495.pdf Section III.C.
+
+    """
+    return np.ones(alpha.size, dtype=np.double) * INFINITY
+
+
+@numba.njit
+def compute_beta_one_node(alpha):
+    """Compute beta values for ONE node.
+
+    https://arxiv.org/pdf/1510.06495.pdf Section III.C.
+
+    """
+    return np.zeros(alpha.size, dtype=np.double)

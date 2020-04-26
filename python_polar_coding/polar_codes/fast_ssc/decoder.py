@@ -1,11 +1,11 @@
 import numpy as np
 from anytree import PreOrderIter
 
-from python_polar_coding.polar_codes.sc import SCDecoder
 from python_polar_coding.polar_codes.base.functions import (
     compute_left_alpha,
     compute_right_alpha,
 )
+from python_polar_coding.polar_codes.sc import SCDecoder
 
 from .node import FastSSCNode
 
@@ -73,6 +73,10 @@ class FastSSCDecoder(SCDecoder):
         """Compute intermediate Alpha values (LLR)."""
         for node in leaf.path[1:]:
             if node.is_computed:
+                continue
+
+            # No need to compute zero node because output is vector of zeros
+            if node.is_zero:
                 continue
 
             parent_alpha = node.parent.alpha

@@ -43,6 +43,9 @@ class FastSSCNode(Node):
     def __str__(self):
         return ''.join([str(m) for m in self._mask])
 
+    def __len__(self):
+        return self._mask.size
+
     @property
     def N(self):
         return self._mask.size
@@ -99,6 +102,26 @@ class FastSSCNode(Node):
     @property
     def spc_min_size(self):
         return self.M or self.__class__.SPC_MIN_SIZE
+
+    @property
+    def is_zero(self):
+        return self._node_type == self.ZERO_NODE
+
+    @property
+    def is_one(self):
+        return self._node_type == self.ONE_NODE
+
+    @property
+    def is_repetition(self):
+        return self._node_type == self.REPETITION
+
+    @property
+    def is_parity(self):
+        return self._node_type == self.SINGLE_PARITY_CHECK
+
+    @property
+    def type(self):
+        return self._node_type
 
     def to_dict(self):
         return {
