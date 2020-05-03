@@ -1,8 +1,8 @@
 import numba
 import numpy as np
 
-from ..base import make_hard_decision
-from ..fast_ssc import compute_single_parity_check
+from ..fast_scan import compute_spc_beta
+from ..rc_scan import compute_beta_one_node
 
 
 @numba.njit
@@ -21,8 +21,8 @@ def compute_g_repetition(llr, mask_steps, last_chunk_type, N):
         ]))
 
     last_beta = (
-        make_hard_decision(last_alpha) if last_chunk_type == 1
-        else compute_single_parity_check(last_alpha)
+        compute_beta_one_node(last_alpha) if last_chunk_type == 1
+        else compute_spc_beta(last_alpha)
     )
 
     result = np.zeros(N)
@@ -47,7 +47,7 @@ def compute_rg_parity(llr, mask_steps, N):
         for j in range(mask_steps):
             alpha[j] = llr[i + j * step]
 
-        beta = compute_single_parity_check(alpha)
+        beta = compute_spc_beta(alpha)
         result[i:N:step] = beta
 
     return result
