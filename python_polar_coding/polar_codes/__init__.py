@@ -1,3 +1,4 @@
+from .fast_scan import FastSCANCodec
 from .fast_ssc import FastSSCPolarCodec
 from .g_fast_ssc import GeneralizedFastSSCPolarCodec
 from .rc_scan import RCSCANPolarCodec

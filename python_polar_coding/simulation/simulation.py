@@ -9,6 +9,7 @@ from ..polar_codes import (
     GeneralizedFastSSCPolarCodec,
     RCSCANPolarCodec,
 )
+from ..polar_codes.fast_scan import FastSCANCodec
 from . import functions, http
 
 
@@ -17,7 +18,13 @@ class CodeTypes:
     FAST_SSC = 'fast-ssc'
     RC_SCAN = 'rc_scan'
     G_FAST_SSC = 'g-fast-ssc'
-    ALL = [FAST_SSC, RC_SCAN]
+    FAST_SCAN = 'fast-scan'
+    ALL = [
+        FAST_SSC,
+        RC_SCAN,
+        G_FAST_SSC,
+        FAST_SCAN,
+    ]
 
 
 class ChannelTypes:
@@ -28,6 +35,7 @@ CODE_MAP = {
     CodeTypes.FAST_SSC: FastSSCPolarCodec,
     CodeTypes.RC_SCAN: RCSCANPolarCodec,
     CodeTypes.G_FAST_SSC: GeneralizedFastSSCPolarCodec,
+    CodeTypes.FAST_SCAN: FastSCANCodec,
 }
 
 

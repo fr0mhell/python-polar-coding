@@ -14,8 +14,6 @@ class RCSCANNode(FastSSCNode):
         in leaves.
 
         """
-        if self.is_zero or self.is_one:
-            return
 
     def initialize_leaf_beta(self):
         """Initialize BETA values on tree building.

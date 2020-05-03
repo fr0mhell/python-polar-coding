@@ -48,7 +48,7 @@ class RCSCANDecoder(FastSSCDecoder):
 
         """
         for node in PreOrderIter(self._decoding_tree):
-            if not node.is_leaf:
+            if not (node.is_zero or node.is_one):
                 node.beta *= 0
 
     def compute_intermediate_alpha(self, leaf):
@@ -81,8 +81,9 @@ class RCSCANDecoder(FastSSCDecoder):
 
     @property
     def result(self):
-        if self.is_systematic:
-            return make_hard_decision(self.root.alpha + self._compute_result_beta())
+        if not self.is_systematic:
+            raise TypeError('Code must be systematic')
+        return make_hard_decision(self.root.alpha + self._compute_result_beta())
 
     @staticmethod
     def compute_left_alpha(parent_alpha, beta):
