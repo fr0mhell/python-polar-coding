@@ -17,6 +17,7 @@ class GFastSCANCodec(RCSCANPolarCodec):
             pcc_method: str = RCSCANPolarCodec.BHATTACHARYYA,
             AF: int = 1,
             I: int = 1,
+            * args, **kwargs,
     ):
 
         self.AF = AF
