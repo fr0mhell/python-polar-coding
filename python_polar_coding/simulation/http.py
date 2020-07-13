@@ -1,13 +1,15 @@
 import requests
 
 
-def prepare(url, snr_range, required_messages,
-            per_experiment=1000,
-            code_types=None,
-            code_lengths=None):
+def prepare(
+        url,
+        snr_range,
+        required_messages,
+        codes,
+        per_experiment=1000,
+):
     params = {
-        'code_types': code_types,
-        'code_lengths': code_lengths,
+        'codes': codes,
         'snr_range': snr_range,
         'required_messages': required_messages,
         'per_experiment': per_experiment,
