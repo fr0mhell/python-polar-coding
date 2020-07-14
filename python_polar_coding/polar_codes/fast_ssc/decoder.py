@@ -4,6 +4,7 @@ from anytree import PreOrderIter
 from python_polar_coding.polar_codes.base.functions import (
     compute_left_alpha,
     compute_right_alpha,
+    compute_parent_beta_hard,
 )
 from python_polar_coding.polar_codes.sc import SCDecoder
 
@@ -49,7 +50,7 @@ class FastSSCDecoder(SCDecoder):
         for leaf in self._decoding_tree.leaves:
             self._set_decoder_state(self._position)
             self.compute_intermediate_alpha(leaf)
-            leaf.compute_leaf_beta()
+            leaf()
             self.compute_intermediate_beta(leaf)
             self.set_next_state(leaf.N)
 
@@ -64,10 +65,6 @@ class FastSSCDecoder(SCDecoder):
     def result(self):
         if self.is_systematic:
             return self.root.beta
-
-    @property
-    def M(self):
-        return self._decoding_tree.M
 
     def compute_intermediate_alpha(self, leaf):
         """Compute intermediate Alpha values (LLR)."""
@@ -100,15 +97,8 @@ class FastSSCDecoder(SCDecoder):
 
         parent = node.parent
         left = node.siblings[0]
-        parent.beta = self.compute_parent_beta(left.beta, node.beta)
+        parent.beta = compute_parent_beta_hard(left.beta, node.beta)
         return self.compute_intermediate_beta(parent)
 
     def set_next_state(self, leaf_size):
         self._position += leaf_size
-
-    @staticmethod
-    def compute_parent_beta(left, right):
-        """Compute Beta (BITS) of a parent Node."""
-        N = left.size
-        # append - njit incompatible
-        return np.append((left + right) % 2, right)

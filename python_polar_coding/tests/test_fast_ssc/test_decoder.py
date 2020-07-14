@@ -159,7 +159,7 @@ class TestFastSSCDecoder(TestCase):
         # Check tree structure
         self.assertEqual(len(decoder._decoding_tree.leaves), len(sub_codes))
         for i, leaf in enumerate(decoder._decoding_tree.leaves):
-            np.testing.assert_equal(leaf._mask, sub_codes[i])
+            np.testing.assert_equal(leaf.mask, sub_codes[i])
 
         decoder.decode(long_msg)
 
