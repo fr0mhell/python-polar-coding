@@ -1,5 +1,7 @@
 from typing import Union
 
+import numpy as np
+
 from python_polar_coding.polar_codes.base import BasePolarCodec
 
 from .decoder import RCSCANDecoder
@@ -38,3 +40,7 @@ class RCSCANPolarCodec(BasePolarCodec):
         d = super().to_dict()
         d.update({'I': self.I})
         return d
+
+    def decode(self, received_message: np.array) -> np.array:
+        """Decode received message presented as LLR values."""
+        return self.decoder(received_message)

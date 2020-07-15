@@ -70,7 +70,7 @@ class TestRCSCANDecoderComplex(TestCase):
         )
 
         for i, leaf in enumerate(decoder._decoding_tree.leaves):
-            np.testing.assert_equal(leaf._mask, self.sub_codes[i])
+            np.testing.assert_equal(leaf.mask, self.sub_codes[i])
 
     def test_no_noise(self):
         decoder = self._get_decoder()

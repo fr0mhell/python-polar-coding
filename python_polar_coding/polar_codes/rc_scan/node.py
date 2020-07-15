@@ -1,11 +1,31 @@
-import numpy as np
+from typing import Dict
 
-from python_polar_coding.polar_codes.fast_ssc import FastSSCNode
+from python_polar_coding.polar_codes.base.functions.beta_soft import one, zero
 
-from .functions import compute_beta_one_node, compute_beta_zero_node
+from ..base import NodeTypes, SoftNode
 
 
-class RCSCANNode(FastSSCNode):
+class RCSCANNode(SoftNode):
+    supported_nodes = (
+        NodeTypes.ZERO,
+        NodeTypes.ONE,
+    )
+
+    @property
+    def is_zero(self) -> bool:
+        """Check is the node is Zero node."""
+        return self.node_type == NodeTypes.ZERO
+
+    @property
+    def is_one(self) -> bool:
+        """Check is the node is One node."""
+        return self.node_type == NodeTypes.ONE
+
+    def get_decoding_params(self) -> Dict:
+        return dict(
+            node_type=self.node_type,
+            llr=self.alpha,
+        )
 
     def compute_leaf_beta(self):
         """Do nothing for ZERO and ONE nodes.
@@ -24,22 +44,7 @@ class RCSCANNode(FastSSCNode):
         if not self.is_leaf:
             return
 
-        if self._node_type == RCSCANNode.ZERO_NODE:
-            self._beta = compute_beta_zero_node(self.alpha)
-        if self._node_type == RCSCANNode.ONE_NODE:
-            self._beta = compute_beta_one_node(self.alpha)
-
-    def get_node_type(self):
-        """Get the type of RC SCAN Node.
-
-        * Zero node - [0, 0, 0, 0, 0, 0, 0, 0];
-        * One node - [1, 1, 1, 1, 1, 1, 1, 1];
-
-        Or other type.
-
-        """
-        if np.all(self._mask == 0):
-            return RCSCANNode.ZERO_NODE
-        if np.all(self._mask == 1):
-            return RCSCANNode.ONE_NODE
-        return RCSCANNode.OTHER
+        if self.is_zero:
+            self._beta = zero(self.alpha)
+        if self.is_one:
+            self._beta = one(self.alpha)
