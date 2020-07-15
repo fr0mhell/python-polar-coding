@@ -10,11 +10,3 @@ class FastSCANNode(RCSCANNode):
         NodeTypes.REPETITION,
         NodeTypes.SINGLE_PARITY_CHECK,
     )
-
-    @property
-    def is_repetition(self):
-        return self.node_type == NodeTypes.REPETITION
-
-    @property
-    def is_parity(self):
-        return self.node_type == NodeTypes.SINGLE_PARITY_CHECK

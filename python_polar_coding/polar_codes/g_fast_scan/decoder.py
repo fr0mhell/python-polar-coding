@@ -18,6 +18,6 @@ class GFastSCANDecoder(RCSCANDecoder):
         self.AF = AF
         super().__init__(n=n, mask=mask, I=I)
 
-    def setup_decoding_tree(self, N_min, **kwargs):
+    def _setup_decoding_tree(self):
         """Setup decoding tree."""
         return self.node_class(mask=self.mask, AF=self.AF)

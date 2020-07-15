@@ -15,23 +15,28 @@ class GFastSCANCodec(RCSCANPolarCodec):
             design_snr: float = 0.0,
             mask: Union[str, None] = None,
             pcc_method: str = RCSCANPolarCodec.BHATTACHARYYA,
-            AF: int = 1,
+            AF: int = 0,
             I: int = 1,
             * args, **kwargs,
     ):
 
         self.AF = AF
-        super().__init__(N=N, K=K,
-                         design_snr=design_snr,
-                         mask=mask,
-                         pcc_method=pcc_method,
-                         I=I,)
+        super().__init__(
+            N=N,
+            K=K,
+            design_snr=design_snr,
+            mask=mask,
+            pcc_method=pcc_method,
+            I=I,
+        )
 
     def init_decoder(self):
-        return self.decoder_class(n=self.n,
-                                  mask=self.mask,
-                                  AF=self.AF,
-                                  I=self.I)
+        return self.decoder_class(
+            n=self.n,
+            mask=self.mask,
+            AF=self.AF,
+            I=self.I,
+        )
 
     def to_dict(self):
         d = super().to_dict()
