@@ -1,3 +1,5 @@
+import numpy as np
+
 from python_polar_coding.polar_codes.base import BasePolarCodec
 
 from .decoder import FastSSCDecoder
@@ -12,9 +14,8 @@ class FastSSCPolarCodec(BasePolarCodec):
     decoder_class = FastSSCDecoder
 
     def init_decoder(self):
-        return self.decoder_class(n=self.n, mask=self.mask,
-                                  is_systematic=self.is_systematic)
+        return self.decoder_class(n=self.n, mask=self.mask)
 
-    @property
-    def tree(self):
-        return self.decoder._decoding_tree
+    def decode(self, received_message: np.array) -> np.array:
+        """Decode received message presented as LLR values."""
+        return self.decoder(received_message)

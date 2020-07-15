@@ -128,7 +128,7 @@ class TestBasicPolarCode(TestCase):
         precoded = self.systematic_code.encoder._precode(self.message)
         self.assertEqual(precoded.size, self.codeword_length)
 
-        extracted = self.systematic_code.decoder.get_result(precoded)
+        extracted = self.systematic_code.decoder.extract_result(precoded)
         self.assertEqual(extracted.size, self.info_length)
 
         self.assertTrue(all(extracted == self.message))
@@ -143,7 +143,7 @@ class TestBasicPolarCode(TestCase):
         encoded = self.systematic_code.encode(self.message)
         self.assertTrue(all(encoded == self.sys_enc_msg))
 
-        extracted = self.systematic_code.decoder.get_result(encoded)
+        extracted = self.systematic_code.decoder.extract_result(encoded)
         self.assertTrue(all(extracted == self.message))
 
     def test_systematic_encode_with_crc(self):
@@ -151,5 +151,5 @@ class TestBasicPolarCode(TestCase):
         encoded = self.systematic_crc_code.encode(self.message)
         self.assertTrue(all(encoded == self.sys_crc_enc_msg))
 
-        extracted = self.systematic_crc_code.decoder.get_result(encoded)
+        extracted = self.systematic_crc_code.decoder.extract_result(encoded)
         self.assertTrue(all(extracted[:self.info_length] == self.message))
