@@ -1,6 +1,10 @@
 from typing import Dict
 
-from python_polar_coding.polar_codes.base.functions.beta_soft import one, zero
+from python_polar_coding.polar_codes.base.functions.beta_soft import (
+    compute_beta_soft,
+    one,
+    zero,
+)
 
 from ..base import NodeTypes, SoftNode
 
@@ -34,11 +38,15 @@ class RCSCANNode(SoftNode):
         in leaves.
 
         """
+        if self.is_one or self.is_zero:
+            return
+        self.beta = compute_beta_soft(self.node_type, self.alpha)
 
     def initialize_leaf_beta(self):
         """Initialize BETA values on tree building.
 
-        Initialize Leaves following to Section III doi:10.1109/jsac.2014.140515
+        Initialize ZERO and ONE nodes following to Section III
+        doi:10.1109/jsac.2014.140515
 
         """
         if not self.is_leaf:
