@@ -9,3 +9,4 @@ apak/*
 firestore/*credentials*
 src*
 tests/_trial_temp*
+venv/

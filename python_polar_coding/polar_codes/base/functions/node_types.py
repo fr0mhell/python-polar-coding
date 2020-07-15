@@ -24,6 +24,10 @@ class NodeTypeDetector:
     # Minimal number of chunks in generalized nodes
     MIN_CHUNKS = 2
 
+    def __init__(self, *args, **kwargs):
+        self.last_chunk_type = None
+        self.mask_steps = None
+
     def __call__(
             self,
             supported_nodes: list,

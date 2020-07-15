@@ -41,6 +41,10 @@ class BaseDecodingNode(Node):
         self._alpha = np.zeros(self.N, dtype=np.double)
         self._beta = np.zeros(self.N, dtype=np.int8)
 
+        # For generalized decoders
+        self.last_chunk_type = get_node_type.last_chunk_type
+        self.mask_steps = get_node_type.mask_steps
+
         self.build_decoding_tree()
 
     def __str__(self):
