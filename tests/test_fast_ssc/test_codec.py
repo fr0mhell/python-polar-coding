@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from python_polar_coding.polar_codes.fast_ssc import FastSSCPolarCodec
-from python_polar_coding.tests.base import BasicVerifyPolarCode
+from tests.base import BasicVerifyPolarCode
 
 
 class TestFastSSCCode_1024_512(BasicVerifyPolarCode, TestCase):

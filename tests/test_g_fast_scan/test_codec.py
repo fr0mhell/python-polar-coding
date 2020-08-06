@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from python_polar_coding.polar_codes.g_fast_scan import GFastSCANCodec
-from python_polar_coding.tests.base import BasicVerifyPolarCode
+from tests.base import BasicVerifyPolarCode
 
 # Iterations 2
 
