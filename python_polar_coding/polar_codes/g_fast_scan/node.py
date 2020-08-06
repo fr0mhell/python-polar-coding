@@ -1,23 +1,18 @@
 from typing import Dict
 
-from python_polar_coding.polar_codes.fast_ssc import FastSSCNode
+from python_polar_coding.polar_codes.fast_scan import FastSCANNode
 
 from ..base import NodeTypes
 
 
-class GFastSSCNode(FastSSCNode):
-    """Decoder for Generalized Fast SSC code.
-
-    Based on: https://arxiv.org/pdf/1804.09508.pdf
-
-    """
+class GFastSCANNode(FastSCANNode):
     supported_nodes = (
         NodeTypes.ZERO,
         NodeTypes.ONE,
-        NodeTypes.SINGLE_PARITY_CHECK,
         NodeTypes.REPETITION,
-        NodeTypes.RG_PARITY,
+        NodeTypes.SINGLE_PARITY_CHECK,
         NodeTypes.G_REPETITION,
+        NodeTypes.RG_PARITY,
     )
 
     def get_decoding_params(self) -> Dict:

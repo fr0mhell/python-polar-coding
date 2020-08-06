@@ -1,17 +1,12 @@
 from typing import Union
 
-from python_polar_coding.polar_codes.fast_ssc import FastSSCPolarCodec
+from python_polar_coding.polar_codes.rc_scan import RCSCANPolarCodec
 
-from .decoder import GeneralizedFastSSCDecoder
+from .decoder import GFastSCANDecoder
 
 
-class GeneralizedFastSSCPolarCodec(FastSSCPolarCodec):
-    """Generalized Fast SSC code.
-
-    Based on: https://arxiv.org/pdf/1804.09508.pdf
-
-    """
-    decoder_class = GeneralizedFastSSCDecoder
+class GFastSCANCodec(RCSCANPolarCodec):
+    decoder_class = GFastSCANDecoder
 
     def __init__(
             self,
@@ -19,8 +14,10 @@ class GeneralizedFastSSCPolarCodec(FastSSCPolarCodec):
             K: int,
             design_snr: float = 0.0,
             mask: Union[str, None] = None,
-            pcc_method: str = FastSSCPolarCodec.BHATTACHARYYA,
+            pcc_method: str = RCSCANPolarCodec.BHATTACHARYYA,
             AF: int = 0,
+            I: int = 1,
+            * args, **kwargs,
     ):
 
         self.AF = AF
@@ -30,10 +27,16 @@ class GeneralizedFastSSCPolarCodec(FastSSCPolarCodec):
             design_snr=design_snr,
             mask=mask,
             pcc_method=pcc_method,
+            I=I,
         )
 
     def init_decoder(self):
-        return self.decoder_class(n=self.n, mask=self.mask, AF=self.AF)
+        return self.decoder_class(
+            n=self.n,
+            mask=self.mask,
+            AF=self.AF,
+            I=self.I,
+        )
 
     def to_dict(self):
         d = super().to_dict()

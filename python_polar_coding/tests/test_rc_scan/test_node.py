@@ -2,7 +2,9 @@ from unittest import TestCase
 
 import numpy as np
 
-from python_polar_coding.polar_codes.rc_scan import INFINITY, RCSCANNode
+from python_polar_coding.polar_codes.base import INFINITY
+from python_polar_coding.polar_codes.base.functions import NodeTypes
+from python_polar_coding.polar_codes.rc_scan import RCSCANNode
 
 
 class TestRCSCANNode(TestCase):
@@ -13,7 +15,7 @@ class TestRCSCANNode(TestCase):
 
     def test_zero_node(self):
         node = RCSCANNode(mask=np.zeros(4))
-        self.assertEqual(node._node_type, RCSCANNode.ZERO_NODE)
+        self.assertTrue(node.is_zero)
 
         node.llr = self.llr
         node.initialize_leaf_beta()
@@ -24,7 +26,7 @@ class TestRCSCANNode(TestCase):
 
     def test_one_node(self):
         node = RCSCANNode(mask=np.ones(4))
-        self.assertEqual(node._node_type, RCSCANNode.ONE_NODE)
+        self.assertTrue(node.is_one)
 
         node.llr = self.llr
         node.initialize_leaf_beta()
@@ -43,7 +45,6 @@ class TestRCSCANNode(TestCase):
             0, 0, 0, 0,
             1, 1, 1, 1,
         ]))
-        self.assertEqual(node._node_type, RCSCANNode.OTHER)
 
         leaf_path_lengths = [5, 5, 4, 4, 4, 3, 3]
         leaf_masks = [
@@ -52,12 +53,12 @@ class TestRCSCANNode(TestCase):
             np.array([0, 0, 0, 0, ]), np.array([1, 1, 1, 1, ]),
         ]
         leaf_types = [
-            node.ZERO_NODE, node.ONE_NODE, node.ZERO_NODE,
-            node.ZERO_NODE, node.ONE_NODE,
-            node.ZERO_NODE, node.ONE_NODE,
+            NodeTypes.ZERO, NodeTypes.ONE, NodeTypes.ZERO,
+            NodeTypes.ZERO, NodeTypes.ONE,
+            NodeTypes.ZERO, NodeTypes.ONE,
         ]
 
         for i, leaf in enumerate(node.leaves):
             self.assertEqual(len(leaf.path), leaf_path_lengths[i])
-            np.testing.assert_equal(leaf._mask, leaf_masks[i])
-            self.assertEqual(leaf._node_type, leaf_types[i])
+            np.testing.assert_equal(leaf.mask, leaf_masks[i])
+            self.assertTrue(leaf.node_type, leaf_types[i])

@@ -5,8 +5,10 @@ from concurrent import futures
 from ..channels import SimpleAWGNChannel
 from ..modems import SimpleBPSKModem
 from ..polar_codes import (
+    FastSCANCodec,
     FastSSCPolarCodec,
     GeneralizedFastSSCPolarCodec,
+    GFastSCANCodec,
     RCSCANPolarCodec,
 )
 from . import functions, http
@@ -17,7 +19,15 @@ class CodeTypes:
     FAST_SSC = 'fast-ssc'
     RC_SCAN = 'rc_scan'
     G_FAST_SSC = 'g-fast-ssc'
-    ALL = [FAST_SSC, RC_SCAN]
+    FAST_SCAN = 'fast-scan'
+    G_FAST_SCAN = 'g-fast-scan'
+    ALL = [
+        FAST_SSC,
+        RC_SCAN,
+        G_FAST_SSC,
+        FAST_SCAN,
+        G_FAST_SCAN,
+    ]
 
 
 class ChannelTypes:
@@ -28,6 +38,8 @@ CODE_MAP = {
     CodeTypes.FAST_SSC: FastSSCPolarCodec,
     CodeTypes.RC_SCAN: RCSCANPolarCodec,
     CodeTypes.G_FAST_SSC: GeneralizedFastSSCPolarCodec,
+    CodeTypes.FAST_SCAN: FastSCANCodec,
+    CodeTypes.G_FAST_SCAN: GFastSCANCodec,
 }
 
 
