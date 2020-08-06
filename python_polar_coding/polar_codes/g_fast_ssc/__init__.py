@@ -1,3 +1,3 @@
-from .codec import GeneralizedFastSSCPolarCodec
-from .decoder import GeneralizedFastSSCDecoder
+from .codec import GFastSSCPolarCodec
+from .decoder import GFastSSCDecoder
 from .node import GFastSSCNode

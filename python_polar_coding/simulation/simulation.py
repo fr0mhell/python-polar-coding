@@ -5,12 +5,12 @@ from concurrent import futures
 from ..channels import SimpleAWGNChannel
 from ..modems import SimpleBPSKModem
 from ..polar_codes import (
-    FastSCANCodec,
     FastSSCPolarCodec,
-    GeneralizedFastSSCPolarCodec,
-    GFastSCANCodec,
+    GFastSSCPolarCodec,
     RCSCANPolarCodec,
 )
+from ..polar_codes.fast_scan import FastSCANCodec
+from ..polar_codes.g_fast_scan import GFastSCANCodec
 from . import functions, http
 
 
@@ -28,6 +28,15 @@ class CodeTypes:
         FAST_SCAN,
         G_FAST_SCAN,
     ]
+    SCAN = [
+        RC_SCAN,
+        FAST_SCAN,
+        G_FAST_SCAN,
+    ]
+    GENERALIZED = [
+        G_FAST_SSC,
+        G_FAST_SCAN,
+    ]
 
 
 class ChannelTypes:
@@ -37,7 +46,7 @@ class ChannelTypes:
 CODE_MAP = {
     CodeTypes.FAST_SSC: FastSSCPolarCodec,
     CodeTypes.RC_SCAN: RCSCANPolarCodec,
-    CodeTypes.G_FAST_SSC: GeneralizedFastSSCPolarCodec,
+    CodeTypes.G_FAST_SSC: GFastSSCPolarCodec,
     CodeTypes.FAST_SCAN: FastSCANCodec,
     CodeTypes.G_FAST_SCAN: GFastSCANCodec,
 }
@@ -101,10 +110,14 @@ def simulate_from_params(url: str):
         code_params=experiment,
     )
 
-    result_log = (f'Result: {result}\n'
-                  f'{code_type.upper()} ({experiment["N"]},{experiment["K"]})')
-    if code_type == CodeTypes.RC_SCAN:
+    result_log = (
+        f'Result: {result}\n'
+        f'{code_type.upper()} ({experiment["N"]},{experiment["K"]})'
+    )
+    if code_type in CodeTypes.SCAN:
         result_log += f', I = {experiment["I"]}'
+    if code_type in CodeTypes.GENERALIZED:
+        result_log += f', AF = {experiment["AF"]}'
     print(result_log)
 
     resp = http.save_result(
@@ -115,7 +128,7 @@ def simulate_from_params(url: str):
         channel_type=channel_type,
         cls=cls,
     )
-    print(f'Status: {resp.status_code}: {resp.json()}')
+    print(f'Status {resp.status_code}: {resp.json()}')
 
 
 def simulate_multi_core(experiments: int, url: str):
@@ -124,8 +137,10 @@ def simulate_multi_core(experiments: int, url: str):
     print(f'Workers: {workers}; Number of experiments: {experiments}')
 
     with futures.ProcessPoolExecutor(max_workers=workers) as ex:
-        run_tasks = {ex.submit(simulate_from_params, *(url, )): (url, )
-                     for _ in range(experiments)}
+        run_tasks = {
+            ex.submit(simulate_from_params, *(url, )): (url, )
+            for _ in range(experiments)
+        }
         for future in futures.as_completed(run_tasks):
             try:
                 future.result()

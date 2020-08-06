@@ -2,16 +2,16 @@ from typing import Union
 
 from python_polar_coding.polar_codes.fast_ssc import FastSSCPolarCodec
 
-from .decoder import GeneralizedFastSSCDecoder
+from .decoder import GFastSSCDecoder
 
 
-class GeneralizedFastSSCPolarCodec(FastSSCPolarCodec):
+class GFastSSCPolarCodec(FastSSCPolarCodec):
     """Generalized Fast SSC code.
 
     Based on: https://arxiv.org/pdf/1804.09508.pdf
 
     """
-    decoder_class = GeneralizedFastSSCDecoder
+    decoder_class = GFastSSCDecoder
 
     def __init__(
             self,
