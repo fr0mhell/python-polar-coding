@@ -1,0 +1,11 @@
+# Math lib
+numpy
+
+# JIT compilation for numpy code
+numba
+
+# Tree implementation
+anytree
+
+# HTTP requests
+requests

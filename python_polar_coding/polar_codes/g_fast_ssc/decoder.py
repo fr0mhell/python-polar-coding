@@ -5,10 +5,10 @@ from python_polar_coding.polar_codes.fast_ssc import FastSSCDecoder
 from .node import GFastSSCNode
 
 
-class GeneralizedFastSSCDecoder(FastSSCDecoder):
+class GFastSSCDecoder(FastSSCDecoder):
     node_class = GFastSSCNode
 
-    def __init__(self, n: int, mask: np.array, AF: int = 1):
+    def __init__(self, n: int, mask: np.array, AF: int = 0):
         self.AF = AF
         super().__init__(n=n, mask=mask)
 
