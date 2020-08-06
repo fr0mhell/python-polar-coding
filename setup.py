@@ -13,7 +13,7 @@ requirements = parse_requirements(
 setuptools.setup(
     name='python-polar-coding',
 
-    version='0.1.0',
+    version='0.1.1',
 
     description='Polar coding implementation in Python',
 
@@ -37,7 +37,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3 :: Only',
     ],
 
-    keywords='polar codes, fec',
+    keywords='polar codes, fec, simulation',
 
     packages=setuptools.find_packages(),
 

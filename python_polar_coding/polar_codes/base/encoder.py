@@ -1,8 +1,6 @@
 import numpy as np
 from numba import njit
 
-from python_polar_coding.polar_codes.crc import CRC
-
 
 class Encoder:
     """Polar Codes encoder."""
@@ -66,23 +64,3 @@ class Encoder:
                     message[p + start + step] = message[p + start + step]
 
         return message
-
-
-class EncoderWithCRC(Encoder):
-    """Polar Encoder with CRC support."""
-
-    def __init__(self,
-                 mask: np.array,
-                 n: int,
-                 crc_codec: CRC,
-                 is_systematic: bool = True,):
-        super().__init__(mask, n, is_systematic)
-        self.crc_codec = crc_codec
-
-    def encode(self, message: np.array):
-        """Compute CRC value and append to message before encoding."""
-        message = np.append(
-            message,
-            self.crc_codec.compute_crc(message),
-        )
-        return super().encode(message)
