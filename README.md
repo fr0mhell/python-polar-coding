@@ -25,7 +25,7 @@ from python_polar_coding.simulation.functions import (
 
 N = 128
 K = 64
-design_snr = 2.0
+design_snr = 0.0
 messages = 10000
 # SNR in [.0, .5, ..., 4.5, 5]
 snr_range = [i / 2 for i in range(11)]
@@ -50,8 +50,12 @@ for snr in snr_range:
         ber += bit_errors
         fer += frame_error
 
-    result_ber[snr] = ber
-    result_fer[snr] = fer
+    result_ber[snr] = ber / messages
+    result_fer[snr] = fer / messages
+
+print('\tSNR (dB)\t|\tBER\t|\tFER')
+for snr in snr_range:
+    print(f'\t{snr}\t|\t{result_ber[snr]}\t|\t{result_fer[snr]}')
 ```
 
 ## Current progress

@@ -5,8 +5,10 @@
 .idea
 .python-version
 .pytest_cache
-apak/*
-firestore/*credentials*
-src*
+apak/
+src/
 tests/_trial_temp*
 venv/
+*.egg-info/
+build/
+dist/

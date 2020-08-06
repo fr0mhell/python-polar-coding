@@ -4,7 +4,7 @@ from operator import itemgetter
 
 import numpy as np
 
-from python_polar_coding.polar_codes import crc, pcc, utils
+from python_polar_coding.polar_codes import pcc, utils
 
 from . import encoder
 

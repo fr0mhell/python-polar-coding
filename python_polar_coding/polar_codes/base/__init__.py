@@ -1,4 +1,4 @@
-from .codec import BaseCRCPolarCodec, BasePolarCodec
+from .codec import BasePolarCodec
 from .constants import *
 from .decoder import BaseDecoder, BaseTreeDecoder
 from .decoding_path import DecodingPathMixin
