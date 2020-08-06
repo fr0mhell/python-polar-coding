@@ -4,7 +4,6 @@
 #
 #    pip-compile requirements.in
 #
--e git+git://github.com/fr0mhell/PyCRC.git#egg=PyCRC  # via -r requirements.in
 anytree==2.8.0            # via -r requirements.in
 certifi==2020.6.20        # via requests
 chardet==3.0.4            # via requests
