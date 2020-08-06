@@ -1,5 +1,8 @@
-numba
+# Math lib
 numpy
+
+# JIT compilation for numpy code
+numba
 
 # Python CRC implementation
 # Fork used because the package was removed from PyPI
@@ -7,12 +10,6 @@ numpy
 
 # Tree implementation
 anytree
-
-# Enables caching for `anytree` during search
-fastcache
-
-# Mongo client
-pymongo
 
 # HTTP requests
 requests
