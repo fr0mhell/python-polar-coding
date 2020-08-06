@@ -5,7 +5,7 @@ A package for Polar codes simulation.
 ## Installation
 
 ```bash
-pip install git+git://github.com/fr0mhell/python-polar-coding.git#egg=python_polar_coding
+pip install python-polar-coding
 ```
 
 ## Example
