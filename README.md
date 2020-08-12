@@ -26,7 +26,7 @@ from python_polar_coding.simulation.functions import (
 N = 128
 K = 64
 design_snr = 0.0
-messages = 10000
+messages = 1000
 # SNR in [.0, .5, ..., 4.5, 5]
 snr_range = [i / 2 for i in range(11)]
 
@@ -35,6 +35,11 @@ bpsk = SimpleBPSKModulationAWGN(fec_rate=K/N)
 
 result_ber = dict()
 result_fer = dict()
+
+print('Python polar coding simulation')
+print(f'Simulating ({codec.N}, {codec.K}) systematic polar code with Design SNR {codec.design_snr} dB')
+print()
+print('\tSNR (dB)|\tBER\t|\tFER')
 
 for snr in snr_range:
     ber = 0
@@ -50,12 +55,10 @@ for snr in snr_range:
         ber += bit_errors
         fer += frame_error
 
-    result_ber[snr] = ber / messages
+    result_ber[snr] = ber / (messages * codec.K)
     result_fer[snr] = fer / messages
 
-print('\tSNR (dB)\t|\tBER\t|\tFER')
-for snr in snr_range:
-    print(f'\t{snr}\t|\t{result_ber[snr]}\t|\t{result_fer[snr]}')
+    print(f'\t{snr}\t|\t{result_ber[snr]:.4f}\t|\t{result_fer[snr]:.4f}')
 ```
 
 ## Current progress
