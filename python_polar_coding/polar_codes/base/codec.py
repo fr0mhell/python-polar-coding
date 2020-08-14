@@ -1,5 +1,5 @@
 import abc
-from typing import Union
+from typing import Optional
 from operator import itemgetter
 
 import numpy as np
@@ -29,11 +29,15 @@ class BasePolarCodec(metaclass=abc.ABCMeta):
         BHATTACHARYYA: pcc.bhattacharyya_bounds,
     }
 
-    def __init__(self, N: int, K: int,
-                 design_snr: float = 0.0,
-                 is_systematic: bool = True,
-                 mask: Union[str, None] = None,
-                 pcc_method: str = BHATTACHARYYA):
+    def __init__(
+            self,
+            N: int,
+            K: int,
+            design_snr: Optional[float] = 0.0,
+            is_systematic: Optional[bool] = True,
+            mask: Optional[str] = None,
+            pcc_method: Optional[str] = BHATTACHARYYA,
+    ):
 
         assert K < N, (f'Cannot create Polar code with N = {N}, K = {K}.'
                        f'\nN must be bigger than K.')
@@ -46,16 +50,22 @@ class BasePolarCodec(metaclass=abc.ABCMeta):
 
         self.pcc_method = pcc_method
         self.channel_estimates = self._compute_channels_estimates(
-            N=self.N, n=self.n, design_snr=design_snr, pcc_method=pcc_method)
+            N=self.N,
+            n=self.n,
+            design_snr=design_snr,
+            pcc_method=pcc_method,
+        )
         self.mask = self._polar_code_construction(mask)
 
         self.encoder = self.init_encoder()
         self.decoder = self.init_decoder()
 
     def __str__(self):
-        return (f'({self.N}, {self.K}) Polar code.\n'
-                f'Design SNR: {self.design_snr} dB\n'
-                f'Systematic: {str(self.is_systematic)}\n')
+        return (
+            f'({self.N}, {self.K}) Polar code.\n'
+            f'Design SNR: {self.design_snr} dB\n'
+            f'Systematic: {str(self.is_systematic)}\n'
+        )
 
     def to_dict(self):
         """Get code parameters as a dict."""
@@ -63,7 +73,6 @@ class BasePolarCodec(metaclass=abc.ABCMeta):
             'type': self.__class__.__name__,
             'N': self.N,
             'K': self.K,
-            'is_systematic': self.is_systematic,
             'design_snr': self.design_snr,
             'pcc_method': self.pcc_method,
             'mask': ''.join(str(m) for m in self.mask),
@@ -71,8 +80,11 @@ class BasePolarCodec(metaclass=abc.ABCMeta):
 
     def init_encoder(self):
         """Get Polar Encoder instance."""
-        return self.encoder_class(mask=self.mask, n=self.n,
-                                  is_systematic=self.is_systematic)
+        return self.encoder_class(
+            mask=self.mask,
+            n=self.n,
+            is_systematic=self.is_systematic,
+        )
 
     @abc.abstractmethod
     def init_decoder(self):
@@ -86,8 +98,13 @@ class BasePolarCodec(metaclass=abc.ABCMeta):
         """Decode received message presented as LLR values."""
         return self.decoder.decode(received_message)
 
-    def _compute_channels_estimates(self, N: int, n: int, design_snr: float,
-                                    pcc_method: str):
+    def _compute_channels_estimates(
+            self,
+            N: int,
+            n: int,
+            design_snr: float,
+            pcc_method: str,
+    ):
         """Compute bit channels estimates for the polar code."""
         if pcc_method not in self.PCC_METHODS.keys():
             return None
@@ -100,7 +117,10 @@ class BasePolarCodec(metaclass=abc.ABCMeta):
             channel_estimates[utils.reverse_bits(i, n)] for i in range(N)
         ])
 
-    def _polar_code_construction(self, custom_mask=None) -> np.array:
+    def _polar_code_construction(
+            self,
+            custom_mask: Optional[str] = None,
+    ) -> np.array:
         """Construct polar mask.
 
         If a mask was given as a string of 1s and 0s, it converts it to array.
@@ -108,9 +128,10 @@ class BasePolarCodec(metaclass=abc.ABCMeta):
         """
         if custom_mask:
             return np.array([int(b) for b in custom_mask])
+
         return self._construct_polar_mask(self.K)
 
-    def _construct_polar_mask(self, K):
+    def _construct_polar_mask(self, K: int) -> np.array:
         """Build polar code Mask based on channels estimates.
 
         0 means frozen bit, 1 means information position.
@@ -125,10 +146,13 @@ class BasePolarCodec(metaclass=abc.ABCMeta):
 
         # sort channels due to estimates
         mask = sorted(mask, key=itemgetter(1))
+
         # set information position for first `info_length` channels
         for m in mask[:K]:
             m[2] = 1
+
         # sort channels due to order
         mask = sorted(mask, key=itemgetter(0))
+
         # return mask, contains 0s or 1s due to frozen/info position
         return np.array([m[2] for m in mask])
